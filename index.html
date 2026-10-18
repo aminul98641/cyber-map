@@ -1,622 +1,442 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#020503">
-<title>AMINUL ISLAM | CYBER COMMAND</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CYBERMAP OS // ARCHITECT: AMINUL ISLAM</title>
 
-<link rel="stylesheet"
- href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-:root {
-  --g:#00ff88;
-  --g2:#00bd68;
-  --bg:#020503;
-  --panel:#07100b;
-  --line:#16452b;
-  --muted:#6d987e;
-  --red:#ff405b;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;background:var(--bg);color:#d6ffe3;
-  font-family:Consolas,"Courier New",monospace;
-  font-size:12px;overflow:hidden
-}
-button,input{font:inherit}
-button{
-  background:#07180e;color:var(--g);
-  border:1px solid #205735;border-radius:4px;
-  padding:10px 9px;cursor:pointer;
-  transition:.18s
-}
-button:hover{
-  background:#123b20;border-color:var(--g);
-  box-shadow:0 0 12px #00ff8830
-}
-button:active{transform:scale(.97)}
-button:disabled{opacity:.5;cursor:default}
-input{
-  min-width:0;width:100%;padding:11px;
-  color:var(--g);background:#020604;
-  border:1px solid var(--line);border-radius:4px;
-  outline:none
-}
-input:focus{border-color:var(--g)}
-#intro{
-  position:fixed;inset:0;z-index:9000;
-  display:grid;place-items:center;padding:20px;
-  background:radial-gradient(ellipse,#092414,#020503 68%);
-  transition:opacity .8s,visibility .8s
-}
-#intro.hide{opacity:0;visibility:hidden;pointer-events:none}
-.introbox{text-align:center;width:min(380px,100%)}
-.scanring{
-  width:170px;height:170px;margin:25px auto;
-  border:1px solid var(--g);border-radius:50%;
-  display:grid;place-items:center;position:relative;
-  background:repeating-radial-gradient(circle,transparent 0 18px,#00ff881a 19px 20px);
-  box-shadow:0 0 35px #00ff8814,inset 0 0 30px #00ff8815
-}
-.scanring:before{
-  content:"";position:absolute;inset:13px;
-  border:1px dashed var(--g);border-radius:50%;
-  animation:spin 8s linear infinite
-}
-.scanring:after{
-  content:"";position:absolute;left:0;right:0;top:50%;
-  height:2px;background:var(--g);
-  box-shadow:0 0 16px var(--g);
-  animation:beam 1.5s ease-in-out infinite alternate
-}
-.face{
-  width:55px;height:78px;border:2px solid var(--g);
-  border-radius:48%;position:relative;
-  box-shadow:0 0 22px #00ff8833
-}
-.face:before{
-  content:"";position:absolute;left:18%;right:18%;top:35%;
-  height:9px;border-top:2px solid var(--g);
-  border-bottom:2px solid var(--g)
-}
-.face:after{
-  content:"";position:absolute;left:35%;right:35%;
-  bottom:16%;height:2px;background:var(--g)
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes beam{from{top:18%}to{top:80%}}
-.bigtitle{
-  color:var(--g);font-size:clamp(25px,7vw,36px);
-  font-weight:bold;letter-spacing:3px;
-  text-shadow:0 0 20px #00ff8866
-}
-.small{font-size:10px;letter-spacing:1.5px;color:var(--muted);line-height:1.9}
-.progress{height:3px;background:#173522;margin:20px 0}
-#bar{width:0;height:100%;background:var(--g);box-shadow:0 0 12px var(--g)}
-#app{height:100dvh;display:flex;flex-direction:column}
-header{
-  height:55px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:space-between;gap:8px;padding:0 13px;
-  background:#050c07;border-bottom:1px solid var(--line)
-}
-.brand{color:var(--g);font-weight:bold;letter-spacing:1.3px;font-size:14px}
-.live{color:var(--g);font-size:10px}
-.dot{display:inline-block;width:6px;height:6px;background:var(--g);border-radius:50%;margin-right:5px;box-shadow:0 0 8px var(--g)}
-.layout{
-  display:grid;grid-template-columns:245px minmax(0,1fr) 235px;
-  gap:8px;padding:8px;min-height:0;flex:1
-}
-.side{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
-.panel{
-  background:linear-gradient(140deg,#09140c,#040905);
-  border:1px solid var(--line);padding:11px;border-radius:4px;
-  min-width:0
-}
-.ptitle{
-  color:var(--g);font-size:10px;letter-spacing:1.5px;
-  padding-bottom:9px;margin-bottom:9px;
-  border-bottom:1px solid #173522
-}
-.row{display:flex;gap:6px}
-.row>*{min-width:0}
-.btn2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.btn3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-.tool{font-size:10px;min-height:36px;overflow-wrap:anywhere}
-.full{width:100%;margin-top:7px}
-.value{color:#d9ffe5;overflow-wrap:anywhere;line-height:1.7}
-.muted{color:var(--muted)}
-#mapbox{
-  position:relative;min-height:0;min-width:0;
-  border:1px solid #215c35;overflow:hidden;background:#050a06
-}
-#map{position:absolute;inset:0;width:100%;height:100%;background:#050a06}
-#map.gridfx:after{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:450;
-  background-image:linear-gradient(#00ff881c 1px,transparent 1px),
-    linear-gradient(90deg,#00ff881c 1px,transparent 1px);
-  background-size:48px 48px
-}
-#map.nightfx .leaflet-tile-pane{filter:brightness(.65) sepia(.4) hue-rotate(75deg) saturate(1.6)}
-.maplabel{
-  position:absolute;z-index:600;pointer-events:none;
-  top:10px;left:10px;background:#030a06eF;
-  border:1px solid #245735;padding:8px;line-height:1.8;
-  color:var(--g);font-size:10px
-}
-.mapbottom{
-  position:absolute;z-index:600;bottom:10px;left:10px;
-  right:10px;display:flex;justify-content:space-between;
-  gap:5px;pointer-events:none
-}
-.mapbottom span{background:#030a06ed;border:1px solid var(--line);padding:7px;color:var(--g);font-size:10px}
-.radar{
-  width:100%;aspect-ratio:1;max-width:145px;margin:auto;
-  border:1px solid #23623a;border-radius:50%;position:relative;
-  overflow:hidden;
-  background:repeating-radial-gradient(circle,transparent 0 19px,#00ff8833 20px 21px),
-  linear-gradient(transparent 49.5%,#00ff8844 50%,transparent 50.5%),
-  linear-gradient(90deg,transparent 49.5%,#00ff8844 50%,transparent 50.5%)
-}
-.radar:before{
-  content:"";position:absolute;inset:0;border-radius:50%;
-  background:conic-gradient(from 0deg,transparent 0 77%,#00ff8855 100%);
-  animation:spin 4s linear infinite
-}
-.radar:after{
-  content:"";position:absolute;width:5px;height:5px;
-  left:65%;top:32%;background:var(--g);border-radius:50%;
-  box-shadow:0 0 8px var(--g)
-}
-#terminal{
-  height:180px;overflow:auto;font-size:10px;
-  line-height:1.7;color:#8ddda7;overflow-wrap:anywhere
-}
-.logline{margin-bottom:4px}
-.logline b{color:var(--g)}
-.logline.warn{color:#ffc66d}
-#notice{color:var(--g);min-height:16px;line-height:1.7}
-footer{
-  height:25px;flex-shrink:0;border-top:1px solid var(--line);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 12px;color:var(--muted);font-size:9px;gap:6px
-}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#06130a;color:#e3ffe9;border:1px solid var(--line)}
-.leaflet-popup-content a{color:var(--g)}
-@media(max-width:900px){
- .layout{grid-template-columns:210px minmax(0,1fr)}
- .rightside{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;overflow:visible}
- .rightside .panel{min-width:0}
- #terminal{height:100px}
-}
-@media(max-width:600px){
- header{height:48px;padding:0 9px}
- .brand{font-size:11px}
- .live{font-size:9px}
- .layout{display:flex;flex-direction:column;overflow:auto;padding:6px}
- #mapbox{height:54vh;min-height:340px;flex-shrink:0;order:0}
- .leftside{order:1;overflow:visible}
- .rightside{order:2;display:flex;overflow:visible}
- .side{overflow:visible}
- #terminal{height:135px}
- .radar{max-width:110px}
- footer{font-size:8px}
-}
-</style>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Fonts: Orbitron, Share Tech Mono, VT323 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon-cyan: #00f3ff;
+      --neon-green: #00ff66;
+      --neon-pink: #ff0055;
+      --neon-amber: #ffb703;
+      --cyber-dark: #030712;
+      --panel-bg: rgba(5, 10, 24, 0.88);
+      --panel-border: rgba(0, 243, 255, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: var(--cyber-dark);
+      color: #94a3b8;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .font-hud { font-family: 'Orbitron', sans-serif; }
+    .font-matrix { font-family: 'VT323', monospace; }
+
+    /* Scanlines Overlay */
+    .scanlines {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.38) 50%),
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      z-index: 9999;
+      opacity: 0.75;
+    }
+
+    /* Cyber Glows */
+    .glow-cyan { text-shadow: 0 0 10px #00f3ff, 0 0 20px rgba(0, 243, 255, 0.6); }
+    .glow-green { text-shadow: 0 0 10px #00ff66, 0 0 20px rgba(0, 255, 102, 0.6); }
+    .glow-pink { text-shadow: 0 0 10px #ff0055, 0 0 20px rgba(255, 0, 85, 0.6); }
+
+    /* Cyber Glass Panel */
+    .cyber-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.09), inset 0 0 15px rgba(0, 243, 255, 0.03);
+    }
+
+    .cyber-corner {
+      position: relative;
+    }
+    .cyber-corner::before {
+      content: "";
+      position: absolute;
+      top: -2px; left: -2px;
+      width: 10px; height: 10px;
+      border-top: 2px solid #00f3ff;
+      border-left: 2px solid #00f3ff;
+      pointer-events: none;
+    }
+    .cyber-corner::after {
+      content: "";
+      position: absolute;
+      bottom: -2px; right: -2px;
+      width: 10px; height: 10px;
+      border-bottom: 2px solid #00f3ff;
+      border-right: 2px solid #00f3ff;
+      pointer-events: none;
+    }
+
+    /* Cyber Button */
+    .cyber-btn {
+      position: relative;
+      background: rgba(0, 243, 255, 0.08);
+      border: 1px solid rgba(0, 243, 255, 0.4);
+      color: #00f3ff;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    }
+    .cyber-btn:hover, .cyber-btn.active {
+      background: rgba(0, 243, 255, 0.25);
+      border-color: #00f3ff;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .cyber-btn-red {
+      background: rgba(255, 0, 85, 0.12);
+      border-color: rgba(255, 0, 85, 0.5);
+      color: #ff0055;
+    }
+    .cyber-btn-red:hover {
+      background: rgba(255, 0, 85, 0.35);
+      border-color: #ff0055;
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+      color: #fff;
+    }
+
+    .cyber-btn-green {
+      background: rgba(0, 255, 102, 0.1);
+      border-color: rgba(0, 255, 102, 0.5);
+      color: #00ff66;
+    }
+    .cyber-btn-green:hover {
+      background: rgba(0, 255, 102, 0.3);
+      border-color: #00ff66;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.5);
+      color: #fff;
+    }
+
+    /* Glitch Animation */
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-3px, 2px); }
+      40% { transform: translate(-2px, -3px); }
+      60% { transform: translate(3px, 1px); }
+      80% { transform: translate(1px, -2px); }
+      100% { transform: translate(0); }
+    }
+    .glitch-active {
+      animation: glitch 0.2s infinite;
+    }
+
+    /* EMP Flash Animation */
+    @keyframes empFlash {
+      0% { filter: invert(100%) contrast(300%) brightness(200%); }
+      50% { filter: hue-rotate(180deg) saturate(300%); }
+      100% { filter: none; }
+    }
+    .emp-pulse {
+      animation: empFlash 0.7s ease-out;
+    }
+
+    /* Face Scanner Reticle Laser */
+    @keyframes scanLaser {
+      0% { top: 0%; opacity: 0.9; }
+      50% { top: 100%; opacity: 0.9; }
+      100% { top: 0%; opacity: 0.9; }
+    }
+    .laser-line {
+      position: absolute;
+      left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #00ff66, #00f3ff, transparent);
+      box-shadow: 0 0 15px #00ff66, 0 0 25px #00f3ff;
+      animation: scanLaser 2.2s ease-in-out infinite;
+    }
+
+    /* Map styling overrides */
+    .leaflet-popup-content-wrapper {
+      background: rgba(4, 9, 20, 0.95) !important;
+      border: 1px solid #00f3ff !important;
+      color: #00f3ff !important;
+      border-radius: 4px !important;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.35) !important;
+      font-family: 'Share Tech Mono', monospace !important;
+    }
+    .leaflet-popup-tip {
+      background: #040914 !important;
+      border: 1px solid #00f3ff !important;
+    }
+    .leaflet-container {
+      background-color: #030712 !important;
+    }
+
+    /* Tactical Invert and Thermal Filters */
+    .map-inverted {
+      filter: invert(100%) hue-rotate(185deg) brightness(85%) contrast(130%) saturate(140%);
+    }
+    .map-thermal {
+      filter: invert(100%) hue-rotate(320deg) contrast(190%) saturate(200%);
+    }
+
+    /* Radar sweep on canvas */
+    #radar-canvas {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 400;
+    }
+  </style>
 </head>
+<body class="relative flex flex-col">
 
-<body>
-<section id="intro">
-  <div class="introbox">
-    <div class="small">AMINUL TECH WORLD // INITIALIZING</div>
-    <div class="scanring"><div class="face"></div></div>
-    <div class="bigtitle">AMINUL ISLAM</div>
-    <p class="small">CYBER COMMAND CENTER<br>FICTIONAL FACE SCAN SIMULATION</p>
-    <div class="progress"><div id="bar"></div></div>
-    <div id="introStatus" class="small">BOOTING SYSTEM...</div>
-    <button id="skip" style="margin-top:18px">ENTER COMMAND CENTER ↗</button>
-  </div>
-</section>
+  <!-- Scanlines visual overlay -->
+  <div class="scanlines"></div>
 
-<div id="app">
-<header>
-  <div>
-    <div class="brand">◈ AMINUL // CYBER COMMAND</div>
-    <div class="small" style="font-size:8px">GLOBAL MAPPING INTERFACE v2.0</div>
-  </div>
-  <div class="live"><span class="dot"></span>SYSTEM ONLINE</div>
-</header>
+  <!-- ==============================================================
+       1. CINEMATIC BIOMETRIC FACE HACK & BREACH INTRO OVERLAY
+       ============================================================== -->
+  <div id="intro-screen" class="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center p-4 overflow-hidden">
+    <!-- Matrix Canvas background -->
+    <canvas id="matrix-canvas" class="absolute inset-0 opacity-25 pointer-events-none"></canvas>
 
-<div class="layout">
-
-  <aside class="side leftside">
-    <section class="panel">
-      <div class="ptitle">[01] TARGET LOCATION SEARCH</div>
-      <form id="searchForm" class="row">
-        <input id="query" placeholder="City / Place..." required>
-        <button>GO</button>
-      </form>
-      <button class="full" id="locate">◎ FIND MY LOCATION</button>
-      <div class="small" style="margin-top:8px">LOCATION ACCESS REQUIRES PERMISSION</div>
-    </section>
-
-    <section class="panel">
-      <div class="ptitle">[02] MAP CONTROL TOOLS</div>
-      <div class="btn2">
-        <button class="tool" id="sat">🛰 SATELLITE</button>
-        <button class="tool" id="street">▤ STREET MAP</button>
-        <button class="tool" id="zin">＋ ZOOM IN</button>
-        <button class="tool" id="zout">－ ZOOM OUT</button>
-        <button class="tool" id="world">◎ WORLD VIEW</button>
-        <button class="tool" id="full">⛶ FULLSCREEN</button>
-        <button class="tool" id="gridBtn">▦ GRID: OFF</button>
-        <button class="tool" id="nightBtn">◐ NIGHT: OFF</button>
+    <!-- Top alert bar -->
+    <div class="relative z-10 w-full max-w-2xl flex items-center justify-between border-b border-red-500/40 pb-2 mb-4 text-xs font-mono">
+      <div class="flex items-center gap-2 text-red-400">
+        <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+        <span class="tracking-widest font-bold font-hud">CRITICAL BREACH DETECTED // PROTOCOL 0x99</span>
       </div>
-    </section>
-
-    <section class="panel">
-      <div class="ptitle">[03] GEO TOOLS</div>
-      <div class="btn2">
-        <button class="tool" id="pinBtn">⌖ DROP PIN</button>
-        <button class="tool" id="clearBtn">✕ CLEAR PIN</button>
-        <button class="tool" id="coordBtn">▣ COPY COORDS</button>
-        <button class="tool" id="measureBtn">↔ MEASURE DIST.</button>
-        <button class="tool" id="exportBtn">↓ EXPORT POINTS</button>
-        <button class="tool" id="directionsBtn">➤ DIRECTIONS</button>
-      </div>
-      <div class="small" style="margin-top:9px">Click map to select a point. Distance tool uses two map clicks.</div>
-    </section>
-
-    <section class="panel">
-      <div class="ptitle">[04] LOCATION DATA</div>
-      <div class="small">SELECTED PLACE</div>
-      <div class="value" id="place">No location selected</div>
-      <div class="small" style="margin-top:7px">LATITUDE</div>
-      <div class="value" id="lat">--</div>
-      <div class="small" style="margin-top:7px">LONGITUDE</div>
-      <div class="value" id="lng">--</div>
-      <div class="small" style="margin-top:7px">MAP ZOOM</div>
-      <div class="value" id="zoom">--</div>
-    </section>
-  </aside>
-
-  <section id="mapbox">
-    <div id="map"></div>
-    <div class="maplabel">
-      <b>◈ CYBER MAP / LIVE</b><br>
-      MODE: <span id="mapMode">SATELLITE</span><br>
-      STATUS: <span id="mapStatus">READY</span><br>
-      CLOCK: <span id="clock">--:--:--</span>
+      <div class="text-cyan-400">TARGET ARCHITECT: <span class="font-bold text-white">AMINUL ISLAM</span></div>
     </div>
-    <div class="mapbottom">
-      <span id="scale">GLOBAL GRID</span>
-      <span>AMINUL ISLAM ©</span>
+
+    <!-- Center Biometric Face Scanner Box -->
+    <div class="relative z-10 w-full max-w-md cyber-panel cyber-corner p-6 rounded-xl border-red-500/50 shadow-[0_0_50px_rgba(255,0,85,0.25)] flex flex-col items-center">
+      
+      <!-- Hacker Face Scanner Viewport -->
+      <div class="relative w-52 h-52 sm:w-60 sm:h-60 rounded-lg border-2 border-red-500/60 bg-black/80 flex items-center justify-center overflow-hidden shadow-[inset_0_0_30px_rgba(255,0,85,0.3)]">
+        <!-- Laser Sweep Bar -->
+        <div class="laser-line"></div>
+
+        <!-- Wireframe Face / Cyber Skull Hologram -->
+        <div id="hologram-avatar" class="relative w-44 h-44 flex items-center justify-center transition-all duration-300">
+          <svg viewBox="0 0 200 200" class="w-full h-full text-red-500 drop-shadow-[0_0_15px_#ff0055]" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Stylized Cyber Skull / Neural Face Mesh -->
+            <path d="M60 40 Q100 20 140 40 Q170 70 160 120 Q145 175 100 185 Q55 175 40 120 Q30 70 60 40 Z" stroke-dasharray="6,4" />
+            <!-- Facial Node Vectors -->
+            <circle cx="75" cy="85" r="14" stroke="#00f3ff" stroke-width="2.5" />
+            <circle cx="75" cy="85" r="5" fill="#00f3ff" class="animate-ping" />
+            <circle cx="125" cy="85" r="14" stroke="#00f3ff" stroke-width="2.5" />
+            <circle cx="125" cy="85" r="5" fill="#00f3ff" class="animate-ping" />
+            <!-- Bridge & Nose Vector -->
+            <path d="M100 70 L100 115 L90 125 L110 125 Z" stroke="#00ff66" />
+            <!-- Jaw grid -->
+            <path d="M65 145 L135 145 M75 160 L125 160 M85 175 L115 175" stroke="#ff0055" />
+            <!-- Cyber Target crosshair -->
+            <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(0, 243, 255, 0.4)" stroke-dasharray="4,4" />
+            <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(0, 243, 255, 0.4)" stroke-dasharray="4,4" />
+          </svg>
+
+          <!-- Faux Hack Infiltration Tag -->
+          <div class="absolute bottom-2 bg-red-950/90 border border-red-500 text-[10px] text-red-300 px-2 py-0.5 rounded uppercase font-bold tracking-widest animate-pulse">
+            CAMERA FEED EXFILTRATED
+          </div>
+        </div>
+
+        <!-- Corner HUD reticles -->
+        <div class="absolute top-2 left-2 text-[10px] text-red-400 font-mono">F-SIG: 99.8%</div>
+        <div class="absolute top-2 right-2 text-[10px] text-cyan-400 font-mono">REC: [LIVE]</div>
+        <div class="absolute bottom-2 left-2 text-[9px] text-gray-500">RES: 4096x2160</div>
+      </div>
+
+      <!-- Identity Recognition Status -->
+      <div class="w-full mt-4 space-y-1 text-center">
+        <div id="scan-state-title" class="font-hud font-extrabold text-base tracking-widest text-red-500 glow-pink">
+          DEVICE INTRUSION // SCANNING BIOMETRICS
+        </div>
+        <div id="scan-state-subtitle" class="text-xs text-gray-400 font-mono">
+          Extracting biometric telemetry & facial neural hash...
+        </div>
+      </div>
+
+      <!-- Terminal stream box -->
+      <div class="w-full mt-3 bg-black/90 border border-red-500/30 rounded p-2 text-[11px] font-mono text-green-400 h-20 overflow-y-auto space-y-0.5" id="intro-terminal-log">
+        <div>> INITIATING HARDWARE HANDSHAKE...</div>
+      </div>
+
+      <!-- Override / Enter Button -->
+      <button id="enter-os-btn" class="mt-4 w-full cyber-btn py-3 font-hud font-black tracking-widest text-sm text-cyan-300 bg-cyan-950/50 border-cyan-400 flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,243,255,0.4)]">
+        <i data-lucide="shield-check" class="w-5 h-5 text-green-400"></i>
+        <span>AUTHENTICATE // ENTER CYBERMAP OS</span>
+      </button>
+
+      <div class="mt-2 text-[10px] text-gray-500 uppercase tracking-widest text-center">
+        Lead Software Engineer: <span class="text-green-400 font-bold">AMINUL ISLAM</span>
+      </div>
     </div>
-  </section>
+  </div>
 
-  <aside class="side rightside">
-    <section class="panel">
-      <div class="ptitle">[05] RADAR SIMULATION</div>
-      <div class="radar"></div>
-      <div class="small" style="text-align:center;margin-top:10px">
-        LOCAL VISUAL RADAR<br>SIMULATION ONLY
+  <!-- ==============================================================
+       2. TOP CYBER COMMAND HEADER (PROMINENT CREATOR BRANDING)
+       ============================================================== -->
+  <header class="relative z-[1100] cyber-panel border-b border-cyan-500/30 px-3 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+    
+    <!-- Architect / Engineer Identity Block -->
+    <div class="flex items-center space-x-3">
+      <div class="relative w-10 h-10 rounded-lg bg-black border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_#00f3ff]">
+        <i data-lucide="cpu" class="w-6 h-6 text-cyan-400 animate-pulse"></i>
+        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full animate-ping"></div>
       </div>
-      <button class="full" id="radarBtn">⟳ RUN RADAR SWEEP</button>
-    </section>
-
-    <section class="panel">
-      <div class="ptitle">[06] SYSTEM TERMINAL</div>
-      <div id="terminal" aria-live="polite"></div>
-      <div class="row" style="margin-top:7px">
-        <input id="cmd" placeholder="Type help...">
-        <button id="runCmd">RUN</button>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-hud font-black text-sm sm:text-base tracking-widest text-white glow-cyan">CYBERMAP OS // V4</span>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-red-950/80 text-red-400 border border-red-500/50 font-bold tracking-wider">ROOT ACCESS</span>
+        </div>
+        <div class="flex items-center gap-2 text-[11px]">
+          <span class="text-cyan-400 font-bold uppercase">SOFTWARE ENGINEER:</span>
+          <span class="text-green-400 font-hud font-black tracking-widest glow-green border-b border-green-500">AMINUL ISLAM</span>
+          <span class="text-gray-500 hidden sm:inline">|</span>
+          <span class="text-amber-400 hidden sm:inline font-mono">SYS-ID: AI-9042 // LEVEL 9</span>
+        </div>
       </div>
-      <div class="small" style="margin-top:7px">
-        Commands: help, status, time, clear
+    </div>
+
+    <!-- Live Telemetry HUD Counters -->
+    <div class="hidden lg:flex items-center gap-4 bg-black/80 px-4 py-1.5 rounded-md border border-cyan-500/30 text-cyan-400 text-[11px]">
+      <div>LAT: <span id="hud-lat" class="text-white font-mono">23.810300° N</span></div>
+      <div>LNG: <span id="hud-lng" class="text-white font-mono">90.412500° E</span></div>
+      <div>ZOOM: <span id="hud-zoom" class="text-green-400 font-mono">12x</span></div>
+      <div>SATS: <span id="hud-sats" class="text-amber-400 font-mono">24 ORBITAL LOCK</span></div>
+      <div>CPU: <span id="hud-cpu" class="text-red-400 font-mono">14.8%</span></div>
+    </div>
+
+    <!-- Quick Utility Bar -->
+    <div class="flex items-center gap-2">
+      <!-- SFX Sound Engine Toggle -->
+      <button id="sfx-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] flex items-center gap-1.5" title="Toggle Tactical SFX Engine">
+        <i data-lucide="volume-2" id="sfx-icon" class="w-3.5 h-3.5"></i>
+        <span id="sfx-label" class="hidden sm:inline">SFX: ON</span>
+      </button>
+
+      <!-- Danger EMP Glitch Trigger -->
+      <button id="emp-trigger-btn" class="cyber-btn cyber-btn-red px-2.5 py-1 text-[11px] flex items-center gap-1 font-bold" title="Node EMP Shockwave">
+        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">EMP PULSE</span>
+      </button>
+
+      <!-- CCTV Cam Surveillance Feed -->
+      <button id="cctv-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] flex items-center gap-1 text-amber-300 border-amber-500/40">
+        <i data-lucide="video" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">CCTV NETWORK</span>
+      </button>
+
+      <!-- Terminal console toggle -->
+      <button id="term-toggle-btn" class="cyber-btn cyber-btn-green px-2.5 py-1 text-[11px] flex items-center gap-1 font-bold">
+        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">SHELL</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==============================================================
+       3. MAIN MAP & RECON VIEWPORT
+       ============================================================== -->
+  <main class="relative flex-1 w-full h-full overflow-hidden">
+    <!-- LEAFLET MAP ELEMENT -->
+    <div id="cyber-map" class="w-full h-full z-0 cursor-crosshair"></div>
+
+    <!-- RADAR OVERLAY CANVAS -->
+    <canvas id="radar-canvas"></canvas>
+
+    <!-- SEARCH & ROUTING HUD (TOP-LEFT) -->
+    <div class="absolute top-3 left-3 z-[900] w-[calc(100%-1.5rem)] max-w-sm sm:max-w-md flex flex-col gap-2">
+      <!-- Search Input Container -->
+      <div class="cyber-panel cyber-corner p-2 rounded-lg">
+        <div class="flex items-center gap-2">
+          <div class="text-cyan-400 pl-1"><i data-lucide="search" class="w-4 h-4"></i></div>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search Target Matrix (e.g. Dubai, New York, Tokyo)..." 
+            class="w-full bg-black/70 border border-cyan-500/40 rounded px-2.5 py-1.5 text-xs text-white placeholder-cyan-600 focus:outline-none focus:border-cyan-300 font-mono tracking-wide"
+          />
+          <button id="search-btn" class="cyber-btn px-3 py-1.5 text-xs font-hud font-bold tracking-wider">
+            SCAN
+          </button>
+        </div>
+
+        <!-- Search Auto-suggestions / Results dropdown -->
+        <div id="search-results-dropdown" class="hidden mt-2 max-h-48 overflow-y-auto space-y-1 border-t border-cyan-500/20 pt-2 text-xs"></div>
       </div>
-    </section>
 
-    <section class="panel">
-      <div class="ptitle">[07] QUICK ACTIONS</div>
-      <div class="btn2">
-        <button class="tool" id="copyLink">↗ SHARE MAP</button>
-        <button class="tool" id="aboutBtn">ⓘ ABOUT</button>
+      <!-- Action Mode Buttons Bar -->
+      <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+        <button id="route-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5">
+          <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+          <span>WARP TRAJECTORY</span>
+        </button>
+        <button id="measure-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5 text-amber-300 border-amber-500/40">
+          <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
+          <span>RANGEFINDER</span>
+        </button>
+        <button id="traceroute-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5 text-green-400 border-green-500/40">
+          <i data-lucide="radio" class="w-3.5 h-3.5"></i>
+          <span>IP SNIFFER</span>
+        </button>
       </div>
-      <div id="notice" class="small" style="margin-top:10px">ALL SYSTEMS READY</div>
-    </section>
-  </aside>
-</div>
 
-<footer>
-  <span>CREATED BY AMINUL ISLAM</span>
-  <span>PUBLIC MAP // NO SIGNUP</span>
-</footer>
-</div>
+      <!-- ROUTING PANEL -->
+      <div id="routing-panel" class="hidden cyber-panel cyber-corner p-3 rounded-lg text-xs space-y-2 border-cyan-400/50">
+        <div class="flex items-center justify-between border-b border-cyan-500/20 pb-1">
+          <span class="text-cyan-300 font-hud font-bold text-[11px] flex items-center gap-1">
+            <i data-lucide="git-commit" class="w-3.5 h-3.5 text-green-400"></i> TRAJECTORY ROUTE MATRIX
+          </span>
+          <button id="close-route-panel" class="text-gray-400 hover:text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-const $ = id => document.getElementById(id);
-let introDone = false;
-let pct = 0;
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-5 text-center text-green-400 font-bold">A</span>
+            <input type="text" id="route-start-input" placeholder="Origin or click 'Pick A'..." class="w-full bg-black/70 border border-green-500/40 rounded px-2 py-1 text-white text-[11px]" />
+            <button id="pick-origin-btn" class="cyber-btn px-2 py-1 text-[10px]">PICK</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-5 text-center text-red-400 font-bold">B</span>
+            <input type="text" id="route-dest-input" placeholder="Destination or click 'Pick B'..." class="w-full bg-black/70 border border-red-500/40 rounded px-2 py-1 text-white text-[11px]" />
+            <button id="pick-dest-btn" class="cyber-btn px-2 py-1 text-[10px]">PICK</button>
+          </div>
+        </div>
 
-const bootLines = [
-  "BOOTING CYBER INTERFACE...",
-  "INITIALIZING MAP MODULE...",
-  "STARTING VISUAL RADAR...",
-  "LOADING COMMAND CENTER...",
-  "SYSTEM READY."
-];
+        <div class="flex gap-2 pt-1">
+          <button id="execute-route-btn" class="flex-1 cyber-btn py-1.5 bg-green-500/20 border-green-400 text-green-300 font-bold font-hud tracking-wider text-[11px]">
+            ENGAGE TRAJECTORY
+          </button>
+          <button id="clear-route-btn" class="cyber-btn px-3 py-1.5 text-red-400 border-red-500/40 text-[11px]">
+            CLEAR
+          </button>
+        </div>
 
-const boot = setInterval(() => {
-  pct += 2;
-  $("bar").style.width = pct + "%";
-  $("introStatus").textContent =
-    bootLines[Math.min(4, Math.floor(pct / 21))];
-  if (pct >= 100) {
-    clearInterval(boot);
-    setTimeout(enter, 450);
-  }
-}, 45);
-
-$("skip").onclick = enter;
-
-function enter() {
-  if (introDone) return;
-  introDone = true;
-  clearInterval(boot);
-  $("intro").classList.add("hide");
-  log("Command center initialized.");
-  log("Satellite map module ready.");
-  setTimeout(() => map.invalidateSize(), 900);
-}
-
-const map = L.map("map", {zoomControl:false})
-  .setView([22.9734,78.6569],3);
-
-const satellite = L.tileLayer(
-  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  {maxZoom:19, attribution:"Imagery © Esri and its imagery providers"}
-);
-const street = L.tileLayer(
-  "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {maxZoom:19, attribution:"© OpenStreetMap contributors"}
-);
-
-satellite.addTo(map);
-L.control.zoom({position:"bottomright"}).addTo(map);
-
-let marker = null;
-let selected = null;
-let pins = [];
-let measureMode = false;
-let measurePoints = [];
-let measureLine = null;
-let gridOn = false;
-let nightOn = false;
-let lastSearch = 0;
-
-function say(text) {
-  $("notice").textContent = text;
-  $("mapStatus").textContent = text.toUpperCase().slice(0,22);
-}
-
-function log(text, warn=false) {
-  const div = document.createElement("div");
-  div.className = "logline" + (warn ? " warn" : "");
-  const time = new Date().toLocaleTimeString();
-  const tag = document.createElement("b");
-  tag.textContent = "[" + time + "] ";
-  div.append(tag, document.createTextNode(text));
-  $("terminal").appendChild(div);
-  while ($("terminal").children.length > 60) {
-    $("terminal").removeChild($("terminal").firstChild);
-  }
-  $("terminal").scrollTop = $("terminal").scrollHeight;
-}
-
-function escapeHTML(v) {
-  return String(v).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",
-    '"':"&quot;","'":"&#39;"
-  })[c]);
-}
-
-function setPoint(lat,lng,name="Selected Map Point") {
-  selected = {lat,lng,name};
-  $("place").textContent = name;
-  $("lat").textContent = lat.toFixed(6);
-  $("lng").textContent = lng.toFixed(6);
-  $("zoom").textContent = map.getZoom();
-
-  if (marker) map.removeLayer(marker);
-  marker = L.marker([lat,lng]).addTo(map);
-  marker.bindPopup(
-    "<b style='color:#00ff88'>" + escapeHTML(name) +
-    "</b><br>" + lat.toFixed(6) + ", " + lng.toFixed(6)
-  ).openPopup();
-
-  log("Coordinates selected: " + lat.toFixed(4) + ", " + lng.toFixed(4));
-}
-
-map.on("click", e => {
-  const {lat,lng} = e.latlng;
-  setPoint(lat,lng);
-
-  if (measureMode) {
-    measurePoints.push(L.latLng(lat,lng));
-    if (measurePoints.length === 1) {
-      say("Select second point");
-      log("Distance measurement: first point saved.");
-    } else {
-      const metres = measurePoints[0].distanceTo(measurePoints[1]);
-      if (measureLine) map.removeLayer(measureLine);
-      measureLine = L.polyline(measurePoints,{color:"#00ff88",weight:3}).addTo(map);
-      say("Distance: " + (metres/1000).toFixed(3) + " km");
-      log("Straight-line distance: " + (metres/1000).toFixed(3) + " km");
-      measurePoints = [];
-      measureMode = false;
-      $("measureBtn").textContent = "↔ MEASURE DIST.";
-    }
-  }
-});
-
-map.on("zoomend", () => {
-  $("zoom").textContent = map.getZoom();
-});
-
-$("sat").onclick = () => {
-  map.removeLayer(street);
-  satellite.addTo(map);
-  $("mapMode").textContent = "SATELLITE";
-  say("Satellite layer enabled");
-  log("Satellite imagery layer enabled.");
-};
-
-$("street").onclick = () => {
-  map.removeLayer(satellite);
-  street.addTo(map);
-  $("mapMode").textContent = "STREET";
-  say("Street layer enabled");
-  log("Street map layer enabled.");
-};
-
-$("zin").onclick = () => map.zoomIn();
-$("zout").onclick = () => map.zoomOut();
-
-$("world").onclick = () => {
-  map.flyTo([22.9734,78.6569],3);
-  say("World view");
-  log("World view restored.");
-};
-
-$("full").onclick = async () => {
-  try {
-    if (!document.fullscreenElement) {
-      await $("mapbox").requestFullscreen();
-    } else {
-      await document.exitFullscreen();
-    }
-    setTimeout(() => map.invalidateSize(),250);
-  } catch {
-    say("Fullscreen unavailable");
-  }
-};
-
-document.addEventListener("fullscreenchange", () => {
-  setTimeout(() => map.invalidateSize(),250);
-});
-
-$("gridBtn").onclick = () => {
-  gridOn = !gridOn;
-  $("map").classList.toggle("gridfx",gridOn);
-  $("gridBtn").textContent = "▦ GRID: " + (gridOn?"ON":"OFF");
-  say("Grid overlay " + (gridOn?"enabled":"disabled"));
-  log("Visual grid " + (gridOn?"enabled.":"disabled."));
-};
-
-$("nightBtn").onclick = () => {
-  nightOn = !nightOn;
-  $("map").classList.toggle("nightfx",nightOn);
-  $("nightBtn").textContent = "◐ NIGHT: " + (nightOn?"ON":"OFF");
-  say("Night filter " + (nightOn?"enabled":"disabled"));
-  log("Visual night filter toggled.");
-};
-
-$("locate").onclick = () => {
-  if (!navigator.geolocation) {
-    say("Geolocation unsupported");
-    return;
-  }
-  say("Waiting for location permission");
-  log("Requesting browser location permission.");
-
-  navigator.geolocation.getCurrentPosition(p => {
-    const lat = p.coords.latitude, lng = p.coords.longitude;
-    map.flyTo([lat,lng],16);
-    setPoint(lat,lng,"Your Current Location");
-    say("Your location displayed");
-  }, () => {
-    say("Location denied or unavailable");
-    log("Location unavailable. Check browser permission.",true);
-  }, {enableHighAccuracy:true,timeout:12000});
-};
-
-$("searchForm").onsubmit = async e => {
-  e.preventDefault();
-  const q = $("query").value.trim();
-  if (!q) return;
-
-  if (Date.now()-lastSearch < 1100) {
-    say("Wait before another search");
-    return;
-  }
-  lastSearch = Date.now();
-  say("Searching location...");
-  log("Place search requested: " + q);
-
-  try {
-    const u = new URL("https://nominatim.openstreetmap.org/search");
-    u.searchParams.set("q",q);
-    u.searchParams.set("format","jsonv2");
-    u.searchParams.set("limit","1");
-    const r = await fetch(u);
-    if (!r.ok) throw new Error("Search service unavailable");
-    const data = await r.json();
-    if (!data.length) {
-      say("No matching place found");
-      return;
-    }
-    const p = data[0], lat=Number(p.lat), lng=Number(p.lon);
-    map.flyTo([lat,lng],15,{duration:1.4});
-    setPoint(lat,lng,p.display_name);
-    say("Location found");
-  } catch {
-    say("Search failed. Check internet.");
-    log("Search failed. Try again later.",true);
-  }
-};
-
-$("pinBtn").onclick = () => {
-  if (!selected) {
-    say("Click the map to select a point first");
-    return;
-  }
-  const p = L.marker([selected.lat,selected.lng]).addTo(map);
-  p.bindPopup("Saved map pin<br>" +
-    selected.lat.toFixed(6)+", "+selected.lng.toFixed(6));
-  pins.push({lat:selected.lat,lng:selected.lng,name:selected.name});
-  say("Pin added: " + pins.length);
-  log("Map pin added. Total saved pins: " + pins.length);
-};
-
-$("clearBtn").onclick = () => {
-  pins = [];
-  measurePoints = [];
-  measureMode = false;
-  if (measureLine) map.removeLayer(measureLine);
-  measureLine = null;
-  map.eachLayer(layer => {
-    if (layer instanceof L.Marker) map.removeLayer(layer);
-  });
-  marker = null;
-  selected = null;
-  $("place").textContent = "No location selected";
-  $("lat").textContent = "--";
-  $("lng").textContent = "--";
-  say("Markers cleared");
-  log("Map markers and saved points cleared.");
-};
-
-$("coordBtn").onclick = async () => {
-  if (!selected) return say("Select a map point first");
-  const txt = selected.lat + ", " + selected.lng;
-  try {
-    await navigator.clipboard.writeText(txt);
-    say("Coordinates copied");
-    log("Coordinates copied to clipboard.");
-  } catch {
-    say(txt);
-    log("Clipboard unavailable; coordinates remain visible.",true);
-  }
-}
+        <!-- Route Stats Feedback -->
+        <div id="route-metrics" class="hidden p-2 rounded bg-black/80 border border-cyan-500/30 text-[11px] flex justify-between items-center text-cyan-200">
+          <div>DIST: <span id="route-dist" class="text-green-400 font-bold">-- km<
