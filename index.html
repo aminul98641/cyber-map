@@ -1,436 +1,525 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CYBERMAP OS // AMINUL ISLAM EDITION</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05090b">
+<title>CYBER MAP | Aminul Islam</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet"
+ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Google Fonts: Orbitron & Share Tech Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --neon-cyan: #00f3ff;
-      --neon-green: #00ff66;
-      --neon-pink: #ff0055;
-      --neon-amber: #ffb703;
-      --cyber-bg: #060913;
-      --panel-bg: rgba(8, 14, 28, 0.82);
-      --panel-border: rgba(0, 243, 255, 0.28);
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: 'Share Tech Mono', monospace;
-      background-color: var(--cyber-bg);
-      color: #b0c9e8;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    .font-hud {
-      font-family: 'Orbitron', sans-serif;
-    }
-
-    /* Cyber Glassmorphism */
-    .cyber-panel {
-      background: var(--panel-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--panel-border);
-      box-shadow: 0 0 25px rgba(0, 243, 255, 0.08), inset 0 0 15px rgba(0, 243, 255, 0.03);
-    }
-
-    .cyber-panel-danger {
-      border-color: rgba(255, 0, 85, 0.4);
-      box-shadow: 0 0 20px rgba(255, 0, 85, 0.15);
-    }
-
-    /* Scanlines Overlay */
-    .scanlines {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-      background-size: 100% 3px, 6px 100%;
-      z-index: 1000;
-      opacity: 0.65;
-    }
-
-    /* Radar Sweep Animation */
-    @keyframes radarSweep {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .radar-sweep-anim {
-      animation: radarSweep 4s linear infinite;
-    }
-
-    /* Cyber Glows */
-    .glow-cyan {
-      text-shadow: 0 0 8px #00f3ff, 0 0 20px rgba(0, 243, 255, 0.5);
-    }
-    .glow-green {
-      text-shadow: 0 0 8px #00ff66, 0 0 20px rgba(0, 255, 102, 0.5);
-    }
-    .glow-pink {
-      text-shadow: 0 0 8px #ff0055, 0 0 20px rgba(255, 0, 85, 0.5);
-    }
-
-    /* Cyber Button Styles */
-    .cyber-btn {
-      position: relative;
-      background: rgba(0, 243, 255, 0.08);
-      border: 1px solid rgba(0, 243, 255, 0.35);
-      color: #00f3ff;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      clip-path: polygon(7px 0%, 100% 0%, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0% 100%, 0% 7px);
-    }
-    .cyber-btn:hover, .cyber-btn.active {
-      background: rgba(0, 243, 255, 0.25);
-      border-color: #00f3ff;
-      box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
-      color: #ffffff;
-      transform: translateY(-1px);
-    }
-    .cyber-btn:active {
-      transform: translateY(1px);
-    }
-
-    /* Neon Pulse Animation for Beacon */
-    @keyframes beaconPulse {
-      0% { transform: scale(0.6); opacity: 1; }
-      100% { transform: scale(2.8); opacity: 0; }
-    }
-    .beacon-ring {
-      animation: beaconPulse 2s ease-out infinite;
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 10, 25, 0.8);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #00f3ff;
-      border-radius: 2px;
-    }
-
-    /* Leaflet popup overrides */
-    .leaflet-popup-content-wrapper {
-      background: rgba(6, 11, 24, 0.95) !important;
-      border: 1px solid #00f3ff !important;
-      color: #00f3ff !important;
-      border-radius: 4px !important;
-      box-shadow: 0 0 20px rgba(0, 243, 255, 0.3) !important;
-      font-family: 'Share Tech Mono', monospace !important;
-    }
-    .leaflet-popup-tip {
-      background: #060b18 !important;
-      border: 1px solid #00f3ff !important;
-    }
-    .leaflet-container {
-      background-color: #050811 !important;
-    }
-    .leaflet-bar a {
-      background-color: rgba(6, 12, 26, 0.9) !important;
-      color: #00f3ff !important;
-      border-color: rgba(0, 243, 255, 0.3) !important;
-    }
-    .leaflet-bar a:hover {
-      background-color: #00f3ff !important;
-      color: #050811 !important;
-    }
-
-    /* Tactical grid filter for standard map mode */
-    .map-cyber-invert {
-      filter: invert(100%) hue-rotate(185deg) brightness(85%) contrast(120%) saturate(150%);
-    }
-
-    /* Corner cyber brackets */
-    .cyber-corner {
-      position: relative;
-    }
-    .cyber-corner::before {
-      content: "";
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      width: 8px;
-      height: 8px;
-      border-top: 2px solid #00f3ff;
-      border-left: 2px solid #00f3ff;
-      pointer-events: none;
-    }
-    .cyber-corner::after {
-      content: "";
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 8px;
-      height: 8px;
-      border-bottom: 2px solid #00f3ff;
-      border-right: 2px solid #00f3ff;
-      pointer-events: none;
-    }
-  </style>
+<style>
+:root {
+  --bg:#05090b;
+  --panel:#0b1315;
+  --green:#00ff9c;
+  --muted:#7d9990;
+  --border:#174b3b;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:#e5fff4;
+  font-family:Arial,Helvetica,sans-serif;
+}
+button,input { font:inherit; }
+button {
+  background:#0c211b;
+  border:1px solid var(--border);
+  color:var(--green);
+  padding:11px 13px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover {
+  background:#123c2c;
+  border-color:var(--green);
+  box-shadow:0 0 12px #00ff9c30;
+}
+header {
+  padding:15px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  background:#07100f;
+}
+.brand {
+  color:var(--green);
+  font-size:21px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+.subtitle {
+  color:var(--muted);
+  font-size:10px;
+  margin-top:5px;
+  letter-spacing:2px;
+}
+.status {
+  color:var(--green);
+  font-size:11px;
+  border:1px solid var(--border);
+  padding:8px;
+  border-radius:20px;
+  white-space:nowrap;
+}
+main { padding:14px; max-width:1500px; margin:auto; }
+.dashboard {
+  display:grid;
+  grid-template-columns:290px minmax(0,1fr);
+  gap:14px;
+}
+.panel {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  min-width:0;
+}
+.heading {
+  color:var(--green);
+  font-size:12px;
+  letter-spacing:2px;
+  font-weight:bold;
+  margin-bottom:13px;
+}
+.searchrow { display:flex; gap:7px; }
+input {
+  min-width:0;
+  width:100%;
+  background:#050b0c;
+  color:white;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  outline:none;
+}
+input:focus { border-color:var(--green); }
+.full { width:100%; margin-top:9px; }
+.actions {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.info {
+  margin-top:17px;
+  border-top:1px solid #17352c;
+  padding-top:13px;
+}
+.label {
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:1.5px;
+  margin-bottom:7px;
+}
+.value {
+  color:#dffff1;
+  font-size:12px;
+  overflow-wrap:anywhere;
+  line-height:1.6;
+}
+.note {
+  color:#809a90;
+  font-size:11px;
+  line-height:1.7;
+  margin-top:15px;
+}
+.mapbox {
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:12px;
+  min-width:0;
+  height:min(72vh,720px);
+  min-height:430px;
+}
+#map { width:100%; height:100%; background:#07100f; }
+.hud {
+  position:absolute;
+  z-index:500;
+  top:12px;
+  left:12px;
+  pointer-events:none;
+  background:#06110fe8;
+  border:1px solid #00ff9c70;
+  border-radius:7px;
+  padding:9px 11px;
+  font-size:10px;
+  line-height:1.8;
+  letter-spacing:1px;
+  color:var(--green);
+}
+.crosshair {
+  position:absolute;
+  z-index:450;
+  right:14px;
+  bottom:20px;
+  color:var(--green);
+  background:#07100fe8;
+  border:1px solid var(--border);
+  padding:9px;
+  border-radius:7px;
+  font-size:11px;
+  pointer-events:none;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background:#091511;
+  color:#dffff1;
+}
+.leaflet-popup-content a { color:#00ff9c; }
+footer {
+  text-align:center;
+  color:#77948a;
+  font-size:11px;
+  padding:20px 8px;
+  line-height:2;
+}
+footer strong { color:var(--green); }
+a { color:var(--green); }
+@media(max-width:760px) {
+  header { padding:13px 11px; }
+  .brand { font-size:17px; letter-spacing:1px; }
+  .status { font-size:9px; padding:7px; }
+  main { padding:9px; }
+  .dashboard { grid-template-columns:1fr; }
+  .mapbox { height:58vh; min-height:390px; }
+  .panel { padding:13px; }
+}
+</style>
 </head>
-<body class="w-screen h-screen relative flex flex-col">
+<body>
 
-  <!-- Scanlines visual overlay -->
-  <div class="scanlines"></div>
+<header>
+  <div>
+    <div class="brand">⌁ CYBER MAP</div>
+    <div class="subtitle">GLOBAL MAPPING SYSTEM // V1.0</div>
+  </div>
+  <div class="status">● SYSTEM ONLINE</div>
+</header>
 
-  <!-- TOP HUD HEADER -->
-  <header class="relative z-[1100] w-full cyber-panel border-b border-cyan-500/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-    <!-- Brand / Creator Identification -->
-    <div class="flex items-center space-x-3">
-      <div class="relative w-8 h-8 rounded bg-cyan-950/60 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_#00f3ff]">
-        <i data-lucide="shield-alert" class="w-5 h-5 animate-pulse"></i>
-        <div class="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="font-hud font-black text-sm tracking-widest text-cyan-300 glow-cyan">CYBERMAP OS</span>
-          <span class="px-1.5 py-0.5 rounded text-[10px] bg-red-950/80 text-red-400 border border-red-500/50 font-bold uppercase tracking-wider">v4.09 PRO</span>
-        </div>
-        <div class="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
-          <span>ARCHITECT:</span>
-          <span class="text-green-400 font-hud font-bold tracking-wider uppercase glow-green border-b border-green-500/40">AMINUL ISLAM</span>
-          <span class="hidden sm:inline text-cyan-400/50">|</span>
-          <span class="hidden sm:inline text-cyan-300">CLEARANCE: ROOT-LVL-9</span>
-        </div>
-      </div>
-    </div>
+<main>
+  <div class="dashboard">
 
-    <!-- Live Telemetry Coordinates HUD -->
-    <div class="hidden md:flex items-center gap-4 bg-black/60 px-3 py-1 rounded border border-cyan-500/20 text-cyan-400 text-[11px]">
-      <div>LAT: <span id="hud-lat" class="text-white font-mono">00.000000° N</span></div>
-      <div>LNG: <span id="hud-lng" class="text-white font-mono">000.000000° E</span></div>
-      <div>ZOOM: <span id="hud-zoom" class="text-green-400 font-mono">13x</span></div>
-      <div>SATELLITES: <span id="hud-sats" class="text-amber-400 font-mono">16 LOCK</span></div>
-    </div>
+    <section class="panel">
+      <div class="heading">// LOCATION SEARCH</div>
 
-    <!-- Fast Controls / Audio / Status -->
-    <div class="flex items-center gap-2">
-      <!-- Audio Synth Toggle -->
-      <button id="audio-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] flex items-center gap-1.5" title="Toggle Tactical Audio Synthesizer">
-        <i data-lucide="volume-2" id="audio-icon" class="w-3.5 h-3.5"></i>
-        <span id="audio-label" class="hidden sm:inline">SFX: ON</span>
+      <form id="searchForm" class="searchrow">
+        <input id="searchInput"
+          placeholder="Search city or place..."
+          autocomplete="off" required>
+        <button type="submit">GO ↗</button>
+      </form>
+
+      <button class="full" id="locateBtn">
+        ◎ MY CURRENT LOCATION
       </button>
 
-      <!-- Fullscreen Toggle -->
-      <button id="fullscreen-btn" class="cyber-btn px-2.5 py-1 text-[11px] flex items-center gap-1" title="Toggle Fullscreen">
-        <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
-      </button>
-
-      <!-- Terminal Open/Close Toggle -->
-      <button id="toggle-terminal-btn" class="cyber-btn px-2.5 py-1 text-[11px] flex items-center gap-1 bg-green-500/10 text-green-400 border-green-500/40">
-        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-        <span class="hidden sm:inline">CONSOLE</span>
-      </button>
-
-      <!-- System status indicator -->
-      <div class="flex items-center gap-1.5 px-2 py-1 bg-green-950/40 border border-green-500/30 rounded text-[10px] text-green-400">
-        <span class="w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
-        <span class="font-bold">LIVE ONLINE</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN VIEWPORT CONTAINER -->
-  <main class="relative flex-1 w-full h-full overflow-hidden">
-    <!-- LEAFLET MAP ELEMENT -->
-    <div id="cyber-map" class="w-full h-full z-0 cursor-crosshair"></div>
-
-    <!-- RADAR OVERLAY (Canvas sweep simulation for high-tech recon vibe) -->
-    <canvas id="radar-canvas" class="pointer-events-none absolute inset-0 z-[500] opacity-40 mix-blend-screen"></canvas>
-
-    <!-- SEARCH & ROUTING FLOATING HUD (TOP-LEFT) -->
-    <div class="absolute top-4 left-4 z-[900] w-[calc(100%-2rem)] max-w-sm sm:max-w-md flex flex-col gap-2">
-      <!-- Search Input Container -->
-      <div class="cyber-panel cyber-corner p-2 rounded-lg">
-        <div class="flex items-center gap-2">
-          <div class="text-cyan-400 pl-1"><i data-lucide="search" class="w-4 h-4"></i></div>
-          <input 
-            type="text" 
-            id="search-input" 
-            placeholder="Search Target Coords, City, Landmark (e.g. Dhaka, Tokyo, Paris)..." 
-            class="w-full bg-black/60 border border-cyan-500/40 rounded px-2.5 py-1.5 text-xs text-white placeholder-cyan-600 focus:outline-none focus:border-cyan-300 font-mono tracking-wide"
-          />
-          <button id="search-btn" class="cyber-btn px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-            <span>SCAN</span>
-          </button>
-        </div>
-
-        <!-- Search Auto-suggestions / Results dropdown -->
-        <div id="search-results-dropdown" class="hidden mt-2 max-h-48 overflow-y-auto space-y-1 border-t border-cyan-500/20 pt-2 text-xs">
-          <!-- Populated by JS -->
-        </div>
+      <div class="actions">
+        <button id="normalBtn">🌍 Normal Map</button>
+        <button id="darkBtn">◈ Cyber Map</button>
+        <button id="zoomIn">＋ Zoom In</button>
+        <button id="zoomOut">－ Zoom Out</button>
+        <button id="resetBtn">⌂ World View</button>
+        <button id="fullBtn">⛶ Fullscreen</button>
       </div>
 
-      <!-- Tactical Mode Buttons Bar -->
-      <div class="flex items-center gap-1.5 overflow-x-auto py-1">
-        <button id="mode-route-toggle" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5">
-          <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
-          <span>TACTICAL ROUTE</span>
-        </button>
-        <button id="mode-measure-toggle" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5">
-          <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
-          <span>RANGEFINDER</span>
-        </button>
-        <button id="radar-toggle-btn" class="cyber-btn px-2.5 py-1 text-[11px] whitespace-nowrap flex items-center gap-1.5 text-amber-300 border-amber-500/40">
-          <i data-lucide="crosshair" class="w-3.5 h-3.5"></i>
-          <span>SWEEP RADAR</span>
-        </button>
+      <div class="info">
+        <div class="label">SYSTEM TIME</div>
+        <div class="value" id="clock">Loading...</div>
       </div>
 
-      <!-- ROUTING PANEL (Collapsible) -->
-      <div id="routing-panel" class="hidden cyber-panel cyber-corner p-3 rounded-lg text-xs space-y-2 border-cyan-400/50">
-        <div class="flex items-center justify-between border-b border-cyan-500/20 pb-1">
-          <span class="text-cyan-300 font-hud font-semibold text-[11px] flex items-center gap-1">
-            <i data-lucide="git-commit" class="w-3.5 h-3.5 text-green-400"></i> NAVIGATION ROUTE MATRIX
-          </span>
-          <button id="close-route-panel" class="text-gray-400 hover:text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-
-        <div class="space-y-1.5">
-          <div class="flex items-center gap-2">
-            <span class="w-5 text-center text-green-400 font-bold">A</span>
-            <input type="text" id="route-start-input" placeholder="Origin or click 'Pick A'..." class="w-full bg-black/60 border border-green-500/40 rounded px-2 py-1 text-white text-[11px]" />
-            <button id="pick-origin-btn" class="cyber-btn px-2 py-1 text-[10px]">PICK</button>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-5 text-center text-red-400 font-bold">B</span>
-            <input type="text" id="route-dest-input" placeholder="Destination or click 'Pick B'..." class="w-full bg-black/60 border border-red-500/40 rounded px-2 py-1 text-white text-[11px]" />
-            <button id="pick-dest-btn" class="cyber-btn px-2 py-1 text-[10px]">PICK</button>
-          </div>
-        </div>
-
-        <div class="flex gap-2 pt-1">
-          <button id="execute-route-btn" class="flex-1 cyber-btn py-1.5 bg-green-500/20 border-green-400 text-green-300 font-bold tracking-wider text-[11px]">
-            ENGAGE TRAJECTORY
-          </button>
-          <button id="clear-route-btn" class="cyber-btn px-3 py-1.5 text-red-400 border-red-500/40 text-[11px]">
-            CLEAR
-          </button>
-        </div>
-
-        <!-- Route Stats Feedback -->
-        <div id="route-metrics" class="hidden p-2 rounded bg-cyan-950/40 border border-cyan-500/20 text-[11px] flex justify-between items-center text-cyan-200">
-          <div>DISTANCE: <span id="route-dist" class="text-green-400 font-bold">-- km</span></div>
-          <div>ETA: <span id="route-time" class="text-amber-400 font-bold">-- mins</span></div>
-          <div>BEARING: <span id="route-bearing" class="text-cyan-400 font-bold">--°</span></div>
-        </div>
+      <div class="info">
+        <div class="label">SELECTED LOCATION</div>
+        <div class="value" id="place">World Map</div>
       </div>
 
-      <!-- MEASUREMENT PANEL (Collapsible) -->
-      <div id="measure-panel" class="hidden cyber-panel p-2.5 rounded text-xs space-y-1.5 border-amber-500/40">
-        <div class="flex justify-between items-center text-amber-300 font-hud">
-          <span class="flex items-center gap-1.5 font-bold"><i data-lucide="ruler" class="w-3.5 h-3.5"></i> TACTICAL RANGEFINDER</span>
-          <button id="close-measure-panel" class="text-gray-400 hover:text-amber-400"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <p class="text-[10px] text-gray-300">Click anywhere on the map to place tactical waypoints. Real-time geodesic distance will calculate continuously.</p>
-        <div class="flex items-center justify-between pt-1">
-          <span class="text-gray-300 text-[11px]">CALCULATED RANGE:</span>
-          <span id="measure-total-dist" class="text-green-400 font-mono font-bold text-sm glow-green">0.00 km</span>
-        </div>
-        <div class="flex gap-2">
-          <button id="reset-measure-btn" class="w-full cyber-btn py-1 text-[11px] text-amber-300 border-amber-500/40">RESET POINTS</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MAP LAYERS & QUICK POI RADAR (TOP-RIGHT HUD) -->
-    <div class="absolute top-4 right-4 z-[900] flex flex-col gap-2 items-end">
-      <!-- Layer Selector Toggle Menu -->
-      <div class="cyber-panel p-1.5 rounded-lg flex flex-col gap-1 items-end">
-        <div class="text-[9px] uppercase tracking-widest text-cyan-400 font-hud px-1">SATELLITE FEED</div>
-        <div class="flex gap-1">
-          <button id="layer-dark" class="cyber-btn active px-2 py-1 text-[10px] flex items-center gap-1">
-            <i data-lucide="eye" class="w-3 h-3"></i> CYBER
-          </button>
-          <button id="layer-sat" class="cyber-btn px-2 py-1 text-[10px] flex items-center gap-1">
-            <i data-lucide="satellite" class="w-3 h-3"></i> SATELLITE
-          </button>
-          <button id="layer-tactical" class="cyber-btn px-2 py-1 text-[10px] flex items-center gap-1">
-            <i data-lucide="map" class="w-3 h-3"></i> STREET
-          </button>
-        </div>
+      <div class="info">
+        <div class="label">LATITUDE</div>
+        <div class="value" id="lat">--</div>
       </div>
 
-      <!-- Quick POI Scanner Bar -->
-      <div class="cyber-panel p-1.5 rounded-lg flex flex-col gap-1 items-end">
-        <div class="text-[9px] uppercase tracking-widest text-amber-400 font-hud px-1">SECTOR RECON SCAN</div>
-        <div class="grid grid-cols-2 gap-1 w-full max-w-[200px]">
-          <button class="poi-quick-btn cyber-btn px-2 py-1 text-[10px] flex items-center justify-center gap-1" data-type="hospital">
-            <i data-lucide="activity" class="w-3 h-3 text-red-400"></i> Med-Bays
-          </button>
-          <button class="poi-quick-btn cyber-btn px-2 py-1 text-[10px] flex items-center justify-center gap-1" data-type="fuel">
-            <i data-lucide="fuel" class="w-3 h-3 text-amber-400"></i> Energy
-          </button>
-          <button class="poi-quick-btn cyber-btn px-2 py-1 text-[10px] flex items-center justify-center gap-1" data-type="police">
-            <i data-lucide="shield" class="w-3 h-3 text-blue-400"></i> Security
-          </button>
-          <button class="poi-quick-btn cyber-btn px-2 py-1 text-[10px] flex items-center justify-center gap-1" data-type="cafe">
-            <i data-lucide="coffee" class="w-3 h-3 text-green-400"></i> Cyber-Hub
-          </button>
-        </div>
+      <div class="info">
+        <div class="label">LONGITUDE</div>
+        <div class="value" id="lng">--</div>
       </div>
-    </div>
 
-    <!-- FLOATING ACTION BUTTONS (BOTTOM-RIGHT) -->
-    <div class="absolute bottom-24 sm:bottom-20 right-4 z-[900] flex flex-col gap-2 items-center">
-      <!-- GPS LOCK / LOCATE ME -->
-      <button id="locate-btn" class="cyber-btn p-3 rounded-full shadow-[0_0_20px_rgba(0,255,102,0.4)] border-green-400 text-green-400 bg-black/80 hover:bg-green-500/20" title="Lock GPS Beacon / My Position">
-        <i data-lucide="crosshair" class="w-6 h-6 animate-pulse"></i>
-      </button>
-
-      <!-- Zoom in/out cyber buttons -->
-      <button id="zoom-in-btn" class="cyber-btn w-9 h-9 rounded flex items-center justify-center font-bold text-lg">+</button>
-      <button id="zoom-out-btn" class="cyber-btn w-9 h-9 rounded flex items-center justify-center font-bold text-lg">-</button>
-      <button id="recenter-btn" class="cyber-btn w-9 h-9 rounded flex items-center justify-center" title="Recenter Global Grid">
-        <i data-lucide="globe" class="w-4 h-4"></i>
-      </button>
-    </div>
-
-    <!-- TACTICAL CROSSHAIR RETICLE (CENTER HUD OVERLAY) -->
-    <div class="pointer-events-none absolute inset-0 z-[450] flex items-center justify-center">
-      <div class="relative w-12 h-12 border border-cyan-500/20 rounded-full flex items-center justify-center">
-        <div class="w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_6px_#00f3ff]"></div>
-        <div class="absolute -top-2 w-0.5 h-1.5 bg-cyan-400/50"></div>
-        <div class="absolute -bottom-2 w-0.5 h-1.5 bg-cyan-400/50"></div>
-        <div class="absolute -left-2 h-0.5 w-1.5 bg-cyan-400/50"></div>
-        <div class="absolute -right-2 h-0.5 w-1.5 bg-cyan-400/50"></div>
+      <div class="info">
+        <div class="label">ZOOM LEVEL</div>
+        <div class="value" id="zoomLevel">3</div>
       </div>
-    </div>
 
-    <!-- TARGET INSPECTOR CARD (Bottom-Left popup overlay) -->
-    <div id="target-card" class="hidden absolute bottom-24 sm:bottom-20 left-4 z-[900] max-w-xs cyber-panel cyber-corner p-3 rounded-lg text-xs space-y-1.5 border-green-400/60 shadow-[0_0_20px_rgba(0,255,102,0.15)]">
-      <div class="flex justify-between items-start">
-        <span class="text-green-400 font-hud font-bold tracking-wider text-[11px] flex items-center gap-1">
-          <i data-lucide="target" class="w-3.5 h-3.5"></i> TARGET LOCK-ON
-        </span>
-        <button id="close-target-card" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+      <button class="full" id="copyBtn">▣ COPY COORDINATES</button>
+
+      <div class="note" id="message" role="status">
+        SYSTEM READY. Search a place or click anywhere on the map.
       </div>
-      <div id="target-titl
+
+      <div class="note">
+        Location access requires your permission.
+        Search needs an internet connection.
+      </div>
+    </section>
+
+    <section class="mapbox" id="mapbox">
+      <div id="map"></div>
+
+      <div class="hud">
+        CYBER MAP // LIVE<br>
+        STATUS: <span id="hudStatus">READY</span><br>
+        GRID: GLOBAL
+      </div>
+
+      <div class="crosshair" id="mapHint">
+        MAP INTERFACE ACTIVE
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <strong>AMINUL ISLAM</strong><br>
+  Designed & Developed by Aminul Islam<br>
+  Interactive mapping powered by Leaflet & OpenStreetMap<br>
+  <a href="https://www.openstreetmap.org/copyright"
+     target="_blank" rel="noopener">
+    © OpenStreetMap contributors
+  </a>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const map = L.map('map', {
+  zoomControl: true,
+  worldCopyJump: true
+}).setView([22.9734, 78.6569], 3);
+
+// Two map styles
+const normalLayer = L.tileLayer(
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }
+);
+
+const cyberLayer = L.tileLayer(
+  'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  {
+    maxZoom: 19,
+    attribution:
+      '&copy; OpenStreetMap contributors &copy; CARTO'
+  }
+);
+
+cyberLayer.addTo(map);
+
+let marker = null;
+let selected = null;
+let lastSearch = 0;
+
+function message(text, status = 'ACTIVE') {
+  $('message').textContent = text;
+  $('hudStatus').textContent = status;
+}
+
+function showLocation(lat, lng, name = 'Selected Location') {
+  selected = { lat, lng, name };
+
+  $('place').textContent = name;
+  $('lat').textContent = lat.toFixed(6);
+  $('lng').textContent = lng.toFixed(6);
+  $('mapHint').textContent =
+    lat.toFixed(4) + ', ' + lng.toFixed(4);
+
+  if (marker) map.removeLayer(marker);
+
+  marker = L.marker([lat, lng]).addTo(map);
+
+  marker.bindPopup(
+    '<b style="color:#00ff9c">' +
+    escapeHTML(name) +
+    '</b><br>' +
+    lat.toFixed(6) + ', ' + lng.toFixed(6) +
+    '<br><br><a target="_blank" rel="noopener" href="' +
+    'https://www.google.com/maps/dir/?api=1&destination=' +
+    lat + ',' + lng +
+    '">Open directions ↗</a>'
+  ).openPopup();
+}
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+
+map.on('click', event => {
+  const { lat, lng } = event.latlng;
+  showLocation(lat, lng, 'Map Point');
+  message('Map point selected.', 'LOCATION SELECTED');
+});
+
+map.on('zoomend', () => {
+  $('zoomLevel').textContent = map.getZoom();
+});
+
+map.on('mousemove', event => {
+  $('mapHint').textContent =
+    event.latlng.lat.toFixed(4) + ', ' +
+    event.latlng.lng.toFixed(4);
+});
+
+$('searchForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const query = $('searchInput').value.trim();
+  if (!query) return;
+
+  // Avoid repeated rapid requests to the public search service.
+  const now = Date.now();
+  if (now - lastSearch < 1100) {
+    message('Please wait a moment before searching again.');
+    return;
+  }
+  lastSearch = now;
+
+  message('Searching for ' + query + '...', 'SEARCHING');
+
+  try {
+    const url = new URL(
+      'https://nominatim.openstreetmap.org/search'
+    );
+    url.searchParams.set('q', query);
+    url.searchParams.set('format', 'jsonv2');
+    url.searchParams.set('limit', '1');
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Search unavailable');
+
+    const results = await response.json();
+    if (!results.length) {
+      message('No result found. Try another place name.', 'NO RESULT');
+      return;
+    }
+
+    const result = results[0];
+    const lat = Number(result.lat);
+    const lng = Number(result.lon);
+
+    map.flyTo([lat, lng], 15, { duration: 1.4 });
+    showLocation(lat, lng, result.display_name);
+    message('Location found successfully.', 'FOUND');
+  } catch (error) {
+    message(
+      'Search failed. Check your internet connection and retry.',
+      'SEARCH ERROR'
+    );
+  }
+});
+
+$('locateBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    message('Your browser does not support location access.');
+    return;
+  }
+
+  message('Waiting for your location permission...', 'LOCATING');
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      map.flyTo([lat, lng], 16, { duration: 1.4 });
+      showLocation(lat, lng, 'My Current Location');
+      message('Your location is displayed.', 'LOCATION FOUND');
+    },
+    error => {
+      message(
+        error.code === 1
+          ? 'Location permission was denied.'
+          : 'Could not get location. Try again with GPS enabled.',
+        'LOCATION ERROR'
+      );
+    },
+    { enableHighAccuracy: true, timeout: 12000 }
+  );
+});
+
+$('normalBtn').addEventListener('click', () => {
+  map.removeLayer(cyberLayer);
+  normalLayer.addTo(map);
+  message('Normal map enabled.', 'NORMAL MAP');
+});
+
+$('darkBtn').addEventListener('click', () => {
+  map.removeLayer(normalLayer);
+  cyberLayer.addTo(map);
+  message('Cyber map enabled.', 'CYBER MAP');
+});
+
+$('zoomIn').addEventListener('click', () => map.zoomIn());
+$('zoomOut').addEventListener('click', () => map.zoomOut());
+
+$('resetBtn').addEventListener('click', () => {
+  map.flyTo([22.9734, 78.6569], 3);
+  message('Returned to world view.', 'WORLD VIEW');
+});
+
+$('fullBtn').addEventListener('click', async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await $('mapbox').requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+    setTimeout(() => map.invalidateSize(), 200);
+  } catch (error) {
+    message('Fullscreen is not available in this browser.');
+  }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  setTimeout(() => map.invalidateSize(), 200);
+});
+
+$('copyBtn').addEventListener('click', async () => {
+  if (!selected) {
+    message('First select a location on the map.');
+    return;
+  }
+
+  const coords = selected.lat + ', ' + selected.lng;
+
+  try {
+    await navigator.clipboard.writeText(coords);
+    message('Coordinates copied: ' + coords, 'COPIED');
+  } catch (error) {
+    message('Clipboard unavailable. Coordinates are shown above.');
+  }
+});
+
+function updateClock() {
+  $('clock').textContent = new Date().toLocaleString();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+</script>
+</body>
+</html>
