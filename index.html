@@ -2,383 +2,427 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#020604">
-<title>AMINUL ISLAM | CYBER MAP</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020503">
+<title>AMINUL ISLAM | CYBER COMMAND</title>
 
 <link rel="stylesheet"
  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 :root {
-  --green:#00ff91;
-  --dark:#020604;
-  --panel:#07120d;
+  --g:#00ff88;
+  --g2:#00bd68;
+  --bg:#020503;
+  --panel:#07100b;
+  --line:#16452b;
+  --muted:#6d987e;
+  --red:#ff405b;
 }
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  background:var(--dark);
-  color:#d9ffea;
-  font-family:Arial,sans-serif;
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:#d6ffe3;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:12px;overflow:hidden
+}
+button,input{font:inherit}
+button{
+  background:#07180e;color:var(--g);
+  border:1px solid #205735;border-radius:4px;
+  padding:10px 9px;cursor:pointer;
+  transition:.18s
+}
+button:hover{
+  background:#123b20;border-color:var(--g);
+  box-shadow:0 0 12px #00ff8830
+}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.5;cursor:default}
+input{
+  min-width:0;width:100%;padding:11px;
+  color:var(--g);background:#020604;
+  border:1px solid var(--line);border-radius:4px;
+  outline:none
+}
+input:focus{border-color:var(--g)}
+#intro{
+  position:fixed;inset:0;z-index:9000;
+  display:grid;place-items:center;padding:20px;
+  background:radial-gradient(ellipse,#092414,#020503 68%);
+  transition:opacity .8s,visibility .8s
+}
+#intro.hide{opacity:0;visibility:hidden;pointer-events:none}
+.introbox{text-align:center;width:min(380px,100%)}
+.scanring{
+  width:170px;height:170px;margin:25px auto;
+  border:1px solid var(--g);border-radius:50%;
+  display:grid;place-items:center;position:relative;
+  background:repeating-radial-gradient(circle,transparent 0 18px,#00ff881a 19px 20px);
+  box-shadow:0 0 35px #00ff8814,inset 0 0 30px #00ff8815
+}
+.scanring:before{
+  content:"";position:absolute;inset:13px;
+  border:1px dashed var(--g);border-radius:50%;
+  animation:spin 8s linear infinite
+}
+.scanring:after{
+  content:"";position:absolute;left:0;right:0;top:50%;
+  height:2px;background:var(--g);
+  box-shadow:0 0 16px var(--g);
+  animation:beam 1.5s ease-in-out infinite alternate
+}
+.face{
+  width:55px;height:78px;border:2px solid var(--g);
+  border-radius:48%;position:relative;
+  box-shadow:0 0 22px #00ff8833
+}
+.face:before{
+  content:"";position:absolute;left:18%;right:18%;top:35%;
+  height:9px;border-top:2px solid var(--g);
+  border-bottom:2px solid var(--g)
+}
+.face:after{
+  content:"";position:absolute;left:35%;right:35%;
+  bottom:16%;height:2px;background:var(--g)
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes beam{from{top:18%}to{top:80%}}
+.bigtitle{
+  color:var(--g);font-size:clamp(25px,7vw,36px);
+  font-weight:bold;letter-spacing:3px;
+  text-shadow:0 0 20px #00ff8866
+}
+.small{font-size:10px;letter-spacing:1.5px;color:var(--muted);line-height:1.9}
+.progress{height:3px;background:#173522;margin:20px 0}
+#bar{width:0;height:100%;background:var(--g);box-shadow:0 0 12px var(--g)}
+#app{height:100dvh;display:flex;flex-direction:column}
+header{
+  height:55px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:space-between;gap:8px;padding:0 13px;
+  background:#050c07;border-bottom:1px solid var(--line)
+}
+.brand{color:var(--g);font-weight:bold;letter-spacing:1.3px;font-size:14px}
+.live{color:var(--g);font-size:10px}
+.dot{display:inline-block;width:6px;height:6px;background:var(--g);border-radius:50%;margin-right:5px;box-shadow:0 0 8px var(--g)}
+.layout{
+  display:grid;grid-template-columns:245px minmax(0,1fr) 235px;
+  gap:8px;padding:8px;min-height:0;flex:1
+}
+.side{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
+.panel{
+  background:linear-gradient(140deg,#09140c,#040905);
+  border:1px solid var(--line);padding:11px;border-radius:4px;
+  min-width:0
+}
+.ptitle{
+  color:var(--g);font-size:10px;letter-spacing:1.5px;
+  padding-bottom:9px;margin-bottom:9px;
+  border-bottom:1px solid #173522
+}
+.row{display:flex;gap:6px}
+.row>*{min-width:0}
+.btn2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.tool{font-size:10px;min-height:36px;overflow-wrap:anywhere}
+.full{width:100%;margin-top:7px}
+.value{color:#d9ffe5;overflow-wrap:anywhere;line-height:1.7}
+.muted{color:var(--muted)}
+#mapbox{
+  position:relative;min-height:0;min-width:0;
+  border:1px solid #215c35;overflow:hidden;background:#050a06
+}
+#map{position:absolute;inset:0;width:100%;height:100%;background:#050a06}
+#map.gridfx:after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:450;
+  background-image:linear-gradient(#00ff881c 1px,transparent 1px),
+    linear-gradient(90deg,#00ff881c 1px,transparent 1px);
+  background-size:48px 48px
+}
+#map.nightfx .leaflet-tile-pane{filter:brightness(.65) sepia(.4) hue-rotate(75deg) saturate(1.6)}
+.maplabel{
+  position:absolute;z-index:600;pointer-events:none;
+  top:10px;left:10px;background:#030a06eF;
+  border:1px solid #245735;padding:8px;line-height:1.8;
+  color:var(--g);font-size:10px
+}
+.mapbottom{
+  position:absolute;z-index:600;bottom:10px;left:10px;
+  right:10px;display:flex;justify-content:space-between;
+  gap:5px;pointer-events:none
+}
+.mapbottom span{background:#030a06ed;border:1px solid var(--line);padding:7px;color:var(--g);font-size:10px}
+.radar{
+  width:100%;aspect-ratio:1;max-width:145px;margin:auto;
+  border:1px solid #23623a;border-radius:50%;position:relative;
   overflow:hidden;
+  background:repeating-radial-gradient(circle,transparent 0 19px,#00ff8833 20px 21px),
+  linear-gradient(transparent 49.5%,#00ff8844 50%,transparent 50.5%),
+  linear-gradient(90deg,transparent 49.5%,#00ff8844 50%,transparent 50.5%)
 }
-button,input { font:inherit; }
-button {
-  background:#071c12;
-  color:var(--green);
-  border:1px solid #145b39;
-  padding:11px;
-  border-radius:6px;
-  cursor:pointer;
+.radar:before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0 77%,#00ff8855 100%);
+  animation:spin 4s linear infinite
 }
-button:active { background:#17472d; }
-#intro {
-  position:fixed;
-  inset:0;
-  z-index:5000;
-  background:radial-gradient(ellipse,#0b2115 0%,#020604 65%);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:22px;
-  transition:opacity 1s, visibility 1s;
+.radar:after{
+  content:"";position:absolute;width:5px;height:5px;
+  left:65%;top:32%;background:var(--g);border-radius:50%;
+  box-shadow:0 0 8px var(--g)
 }
-#intro.hide {
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
+#terminal{
+  height:180px;overflow:auto;font-size:10px;
+  line-height:1.7;color:#8ddda7;overflow-wrap:anywhere
 }
-.intro-inner {
-  text-align:center;
-  width:min(100%,390px);
+.logline{margin-bottom:4px}
+.logline b{color:var(--g)}
+.logline.warn{color:#ffc66d}
+#notice{color:var(--g);min-height:16px;line-height:1.7}
+footer{
+  height:25px;flex-shrink:0;border-top:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;color:var(--muted);font-size:9px;gap:6px
 }
-.eyebrow {
-  color:var(--green);
-  font-size:10px;
-  letter-spacing:4px;
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#06130a;color:#e3ffe9;border:1px solid var(--line)}
+.leaflet-popup-content a{color:var(--g)}
+@media(max-width:900px){
+ .layout{grid-template-columns:210px minmax(0,1fr)}
+ .rightside{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;overflow:visible}
+ .rightside .panel{min-width:0}
+ #terminal{height:100px}
 }
-.scanner {
-  position:relative;
-  width:210px;
-  height:210px;
-  margin:26px auto;
-  display:grid;
-  place-items:center;
-  border:1px solid #00ff9155;
-  border-radius:50%;
-  background:repeating-radial-gradient(
-    circle,transparent 0 23px,#00ff9118 24px 25px
-  );
-  animation:rotate 12s linear infinite;
-}
-.scanner:before,.scanner:after {
-  content:"";
-  position:absolute;
-  inset:13px;
-  border:1px dashed #00ff9166;
-  border-radius:50%;
-}
-.scanner:after {
-  inset:36px;
-  border-style:solid;
-}
-.face {
-  width:75px;
-  height:100px;
-  border:2px solid var(--green);
-  border-radius:48% 48% 42% 42%;
-  position:relative;
-  box-shadow:0 0 25px #00ff9144;
-  animation:pulse 2s infinite;
-}
-.face:before {
-  content:"";
-  position:absolute;
-  width:100%;
-  height:2px;
-  background:var(--green);
-  left:0;
-  top:40%;
-  box-shadow:0 0 12px var(--green);
-  animation:scan 2s ease-in-out infinite alternate;
-}
-.face:after {
-  content:"";
-  position:absolute;
-  left:20%;
-  right:20%;
-  top:32%;
-  height:9px;
-  border-top:2px solid var(--green);
-  border-bottom:2px solid var(--green);
-}
-@keyframes rotate { to { transform:rotate(360deg); } }
-@keyframes scan { to { top:85%; } }
-@keyframes pulse {
-  50% { box-shadow:0 0 35px #00ff9177; }
-}
-h1 {
-  color:var(--green);
-  font-size:clamp(27px,7vw,39px);
-  letter-spacing:3px;
-  margin:10px 0;
-  text-shadow:0 0 20px #00ff9160;
-}
-.sub {
-  font-size:10px;
-  letter-spacing:2px;
-  color:#91b6a0;
-  line-height:2;
-}
-.progress {
-  height:3px;
-  background:#123321;
-  margin:23px 0 12px;
-  overflow:hidden;
-}
-#bar {
-  width:0;
-  height:100%;
-  background:var(--green);
-  box-shadow:0 0 12px var(--green);
-}
-#status {
-  color:var(--green);
-  font-size:10px;
-  min-height:16px;
-  letter-spacing:1px;
-}
-#skip {
-  margin-top:20px;
-  font-size:11px;
-}
-#app { height:100dvh; width:100%; }
-.topbar {
-  position:absolute;
-  z-index:1000;
-  top:12px;
-  left:12px;
-  right:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  pointer-events:none;
-}
-.brand,.live {
-  background:#041009ed;
-  border:1px solid #00ff914d;
-  padding:10px 12px;
-  border-radius:7px;
-  pointer-events:auto;
-}
-.brand {
-  font-size:13px;
-  font-weight:bold;
-  color:var(--green);
-  letter-spacing:1px;
-}
-.live { color:var(--green); font-size:10px; }
-#map { width:100%; height:100%; background:#07110b; }
-.toolbar {
-  position:absolute;
-  z-index:1000;
-  top:76px;
-  left:12px;
-  width:min(310px,calc(100% - 24px));
-  padding:12px;
-  background:#041009ed;
-  border:1px solid #00ff914d;
-  border-radius:9px;
-}
-.search { display:flex; gap:6px; }
-input {
-  width:100%;
-  min-width:0;
-  background:#020805;
-  color:white;
-  border:1px solid #17452c;
-  border-radius:5px;
-  padding:11px;
-  outline:none;
-}
-.controls {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:7px;
-  margin-top:8px;
-}
-#info {
-  position:absolute;
-  z-index:1000;
-  bottom:24px;
-  left:12px;
-  max-width:calc(100% - 24px);
-  background:#041009ed;
-  border:1px solid #00ff914d;
-  padding:12px;
-  border-radius:7px;
-  font-size:11px;
-  line-height:1.9;
-  overflow-wrap:anywhere;
-}
-.green { color:var(--green); }
-#credit {
-  position:absolute;
-  z-index:1000;
-  right:12px;
-  bottom:25px;
-  color:#d1e9da;
-  background:#041009ed;
-  border:1px solid #00ff914d;
-  border-radius:7px;
-  padding:10px;
-  font-size:10px;
-  text-align:right;
-}
-#credit strong { color:var(--green); }
-a { color:var(--green); }
-.leaflet-popup-content-wrapper,.leaflet-popup-tip {
-  background:#07120d;
-  color:white;
-}
-@media(max-width:480px) {
-  .scanner { width:170px;height:170px; }
-  .face { transform:scale(.85); }
-  .toolbar { top:69px; }
-  #info { bottom:16px; font-size:10px; }
-  #credit { bottom:16px; font-size:9px; }
+@media(max-width:600px){
+ header{height:48px;padding:0 9px}
+ .brand{font-size:11px}
+ .live{font-size:9px}
+ .layout{display:flex;flex-direction:column;overflow:auto;padding:6px}
+ #mapbox{height:54vh;min-height:340px;flex-shrink:0;order:0}
+ .leftside{order:1;overflow:visible}
+ .rightside{order:2;display:flex;overflow:visible}
+ .side{overflow:visible}
+ #terminal{height:135px}
+ .radar{max-width:110px}
+ footer{font-size:8px}
 }
 </style>
 </head>
-<body>
 
+<body>
 <section id="intro">
-  <div class="intro-inner">
-    <div class="eyebrow">AMINUL TECH WORLD</div>
-    <div class="scanner"><div class="face"></div></div>
-    <h1>AMINUL ISLAM</h1>
-    <div class="sub">
-      CYBER MAP INTERFACE<br>
-      FICTIONAL FACE SCAN SIMULATION
-    </div>
+  <div class="introbox">
+    <div class="small">AMINUL TECH WORLD // INITIALIZING</div>
+    <div class="scanring"><div class="face"></div></div>
+    <div class="bigtitle">AMINUL ISLAM</div>
+    <p class="small">CYBER COMMAND CENTER<br>FICTIONAL FACE SCAN SIMULATION</p>
     <div class="progress"><div id="bar"></div></div>
-    <div id="status">INITIALIZING INTERFACE...</div>
-    <button id="skip">OPEN MAP NOW ↗</button>
+    <div id="introStatus" class="small">BOOTING SYSTEM...</div>
+    <button id="skip" style="margin-top:18px">ENTER COMMAND CENTER ↗</button>
   </div>
 </section>
 
-<main id="app">
-  <div id="map"></div>
-
-  <div class="topbar">
-    <div class="brand">◈ CYBER MAP</div>
-    <div class="live">● <span id="clock">ONLINE</span></div>
+<div id="app">
+<header>
+  <div>
+    <div class="brand">◈ AMINUL // CYBER COMMAND</div>
+    <div class="small" style="font-size:8px">GLOBAL MAPPING INTERFACE v2.0</div>
   </div>
+  <div class="live"><span class="dot"></span>SYSTEM ONLINE</div>
+</header>
 
-  <section class="toolbar">
-    <form id="search" class="search">
-      <input id="query" placeholder="Search city or place..." required>
-      <button type="submit">GO ↗</button>
-    </form>
-    <div class="controls">
-      <button id="locate">◎ MY LOCATION</button>
-      <button id="satellite">🛰 SATELLITE</button>
-      <button id="streets">▤ STREET MAP</button>
-      <button id="zoomIn">＋ ZOOM IN</button>
-      <button id="zoomOut">－ ZOOM OUT</button>
-      <button id="fullscreen">⛶ FULLSCREEN</button>
+<div class="layout">
+
+  <aside class="side leftside">
+    <section class="panel">
+      <div class="ptitle">[01] TARGET LOCATION SEARCH</div>
+      <form id="searchForm" class="row">
+        <input id="query" placeholder="City / Place..." required>
+        <button>GO</button>
+      </form>
+      <button class="full" id="locate">◎ FIND MY LOCATION</button>
+      <div class="small" style="margin-top:8px">LOCATION ACCESS REQUIRES PERMISSION</div>
+    </section>
+
+    <section class="panel">
+      <div class="ptitle">[02] MAP CONTROL TOOLS</div>
+      <div class="btn2">
+        <button class="tool" id="sat">🛰 SATELLITE</button>
+        <button class="tool" id="street">▤ STREET MAP</button>
+        <button class="tool" id="zin">＋ ZOOM IN</button>
+        <button class="tool" id="zout">－ ZOOM OUT</button>
+        <button class="tool" id="world">◎ WORLD VIEW</button>
+        <button class="tool" id="full">⛶ FULLSCREEN</button>
+        <button class="tool" id="gridBtn">▦ GRID: OFF</button>
+        <button class="tool" id="nightBtn">◐ NIGHT: OFF</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="ptitle">[03] GEO TOOLS</div>
+      <div class="btn2">
+        <button class="tool" id="pinBtn">⌖ DROP PIN</button>
+        <button class="tool" id="clearBtn">✕ CLEAR PIN</button>
+        <button class="tool" id="coordBtn">▣ COPY COORDS</button>
+        <button class="tool" id="measureBtn">↔ MEASURE DIST.</button>
+        <button class="tool" id="exportBtn">↓ EXPORT POINTS</button>
+        <button class="tool" id="directionsBtn">➤ DIRECTIONS</button>
+      </div>
+      <div class="small" style="margin-top:9px">Click map to select a point. Distance tool uses two map clicks.</div>
+    </section>
+
+    <section class="panel">
+      <div class="ptitle">[04] LOCATION DATA</div>
+      <div class="small">SELECTED PLACE</div>
+      <div class="value" id="place">No location selected</div>
+      <div class="small" style="margin-top:7px">LATITUDE</div>
+      <div class="value" id="lat">--</div>
+      <div class="small" style="margin-top:7px">LONGITUDE</div>
+      <div class="value" id="lng">--</div>
+      <div class="small" style="margin-top:7px">MAP ZOOM</div>
+      <div class="value" id="zoom">--</div>
+    </section>
+  </aside>
+
+  <section id="mapbox">
+    <div id="map"></div>
+    <div class="maplabel">
+      <b>◈ CYBER MAP / LIVE</b><br>
+      MODE: <span id="mapMode">SATELLITE</span><br>
+      STATUS: <span id="mapStatus">READY</span><br>
+      CLOCK: <span id="clock">--:--:--</span>
     </div>
-    <div id="feedback" class="sub" style="margin-top:9px">
-      MAP SYSTEM READY
+    <div class="mapbottom">
+      <span id="scale">GLOBAL GRID</span>
+      <span>AMINUL ISLAM ©</span>
     </div>
   </section>
 
-  <section id="info">
-    <div class="green">◈ LOCATION INTEL</div>
-    PLACE: <span id="place">World View</span><br>
-    LAT: <span id="lat">--</span><br>
-    LNG: <span id="lng">--</span><br>
-    ZOOM: <span id="zoom">3</span>
-  </section>
+  <aside class="side rightside">
+    <section class="panel">
+      <div class="ptitle">[05] RADAR SIMULATION</div>
+      <div class="radar"></div>
+      <div class="small" style="text-align:center;margin-top:10px">
+        LOCAL VISUAL RADAR<br>SIMULATION ONLY
+      </div>
+      <button class="full" id="radarBtn">⟳ RUN RADAR SWEEP</button>
+    </section>
 
-  <div id="credit">
-    CREATED BY<br><strong>AMINUL ISLAM</strong>
-  </div>
-</main>
+    <section class="panel">
+      <div class="ptitle">[06] SYSTEM TERMINAL</div>
+      <div id="terminal" aria-live="polite"></div>
+      <div class="row" style="margin-top:7px">
+        <input id="cmd" placeholder="Type help...">
+        <button id="runCmd">RUN</button>
+      </div>
+      <div class="small" style="margin-top:7px">
+        Commands: help, status, time, clear
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="ptitle">[07] QUICK ACTIONS</div>
+      <div class="btn2">
+        <button class="tool" id="copyLink">↗ SHARE MAP</button>
+        <button class="tool" id="aboutBtn">ⓘ ABOUT</button>
+      </div>
+      <div id="notice" class="small" style="margin-top:10px">ALL SYSTEMS READY</div>
+    </section>
+  </aside>
+</div>
+
+<footer>
+  <span>CREATED BY AMINUL ISLAM</span>
+  <span>PUBLIC MAP // NO SIGNUP</span>
+</footer>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-let opened = false;
+let introDone = false;
+let pct = 0;
 
-const lines = [
-  "INITIALIZING CYBER INTERFACE...",
-  "STARTING VISUAL SCANNER...",
-  "SCANNER SIMULATION COMPLETE...",
-  "PREPARING SATELLITE MAP...",
-  "WELCOME TO AMINUL CYBER MAP"
+const bootLines = [
+  "BOOTING CYBER INTERFACE...",
+  "INITIALIZING MAP MODULE...",
+  "STARTING VISUAL RADAR...",
+  "LOADING COMMAND CENTER...",
+  "SYSTEM READY."
 ];
 
-let progress = 0;
-const statusTimer = setInterval(() => {
-  progress += 2;
-  $("bar").style.width = progress + "%";
-  $("status").textContent =
-    lines[Math.min(Math.floor(progress / 22), lines.length - 1)];
-  if (progress >= 100) {
-    clearInterval(statusTimer);
-    setTimeout(openMap, 500);
+const boot = setInterval(() => {
+  pct += 2;
+  $("bar").style.width = pct + "%";
+  $("introStatus").textContent =
+    bootLines[Math.min(4, Math.floor(pct / 21))];
+  if (pct >= 100) {
+    clearInterval(boot);
+    setTimeout(enter, 450);
   }
-}, 65);
+}, 45);
 
-$("skip").addEventListener("click", openMap);
+$("skip").onclick = enter;
 
-function openMap() {
-  if (opened) return;
-  opened = true;
-  clearInterval(statusTimer);
-  $("bar").style.width = "100%";
+function enter() {
+  if (introDone) return;
+  introDone = true;
+  clearInterval(boot);
   $("intro").classList.add("hide");
-  setTimeout(() => map.invalidateSize(), 1100);
+  log("Command center initialized.");
+  log("Satellite map module ready.");
+  setTimeout(() => map.invalidateSize(), 900);
 }
 
-const map = L.map("map", {
-  zoomControl: false
-}).setView([22.9734, 78.6569], 3);
+const map = L.map("map", {zoomControl:false})
+  .setView([22.9734,78.6569],3);
 
-const imagery = L.tileLayer(
+const satellite = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  {
-    maxZoom: 19,
-    attribution: "Imagery © Esri and its imagery providers"
-  }
+  {maxZoom:19, attribution:"Imagery © Esri and its imagery providers"}
 );
-
-const streets = L.tileLayer(
+const street = L.tileLayer(
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-  }
+  {maxZoom:19, attribution:"© OpenStreetMap contributors"}
 );
 
-imagery.addTo(map);
+satellite.addTo(map);
 L.control.zoom({position:"bottomright"}).addTo(map);
 
 let marker = null;
 let selected = null;
+let pins = [];
+let measureMode = false;
+let measurePoints = [];
+let measureLine = null;
+let gridOn = false;
+let nightOn = false;
 let lastSearch = 0;
 
-function safeText(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;",
-    '"':"&quot;", "'":"&#39;"
+function say(text) {
+  $("notice").textContent = text;
+  $("mapStatus").textContent = text.toUpperCase().slice(0,22);
+}
+
+function log(text, warn=false) {
+  const div = document.createElement("div");
+  div.className = "logline" + (warn ? " warn" : "");
+  const time = new Date().toLocaleTimeString();
+  const tag = document.createElement("b");
+  tag.textContent = "[" + time + "] ";
+  div.append(tag, document.createTextNode(text));
+  $("terminal").appendChild(div);
+  while ($("terminal").children.length > 60) {
+    $("terminal").removeChild($("terminal").firstChild);
+  }
+  $("terminal").scrollTop = $("terminal").scrollHeight;
+}
+
+function escapeHTML(v) {
+  return String(v).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
   })[c]);
 }
 
-function setInfo(lat,lng,name) {
+function setPoint(lat,lng,name="Selected Map Point") {
   selected = {lat,lng,name};
   $("place").textContent = name;
   $("lat").textContent = lat.toFixed(6);
@@ -386,125 +430,193 @@ function setInfo(lat,lng,name) {
   $("zoom").textContent = map.getZoom();
 
   if (marker) map.removeLayer(marker);
-
   marker = L.marker([lat,lng]).addTo(map);
   marker.bindPopup(
-    "<b style='color:#00ff91'>" + safeText(name) +
-    "</b><br>" + lat.toFixed(6) + ", " + lng.toFixed(6) +
-    "<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=" +
-    lat + "," + lng + "'>Open directions ↗</a>"
+    "<b style='color:#00ff88'>" + escapeHTML(name) +
+    "</b><br>" + lat.toFixed(6) + ", " + lng.toFixed(6)
   ).openPopup();
+
+  log("Coordinates selected: " + lat.toFixed(4) + ", " + lng.toFixed(4));
 }
 
 map.on("click", e => {
-  setInfo(e.latlng.lat,e.latlng.lng,"Selected Map Point");
-  $("feedback").textContent = "MAP POINT SELECTED";
+  const {lat,lng} = e.latlng;
+  setPoint(lat,lng);
+
+  if (measureMode) {
+    measurePoints.push(L.latLng(lat,lng));
+    if (measurePoints.length === 1) {
+      say("Select second point");
+      log("Distance measurement: first point saved.");
+    } else {
+      const metres = measurePoints[0].distanceTo(measurePoints[1]);
+      if (measureLine) map.removeLayer(measureLine);
+      measureLine = L.polyline(measurePoints,{color:"#00ff88",weight:3}).addTo(map);
+      say("Distance: " + (metres/1000).toFixed(3) + " km");
+      log("Straight-line distance: " + (metres/1000).toFixed(3) + " km");
+      measurePoints = [];
+      measureMode = false;
+      $("measureBtn").textContent = "↔ MEASURE DIST.";
+    }
+  }
 });
 
 map.on("zoomend", () => {
   $("zoom").textContent = map.getZoom();
 });
 
-$("satellite").onclick = () => {
-  map.removeLayer(streets);
-  imagery.addTo(map);
-  $("feedback").textContent = "SATELLITE IMAGERY ACTIVE";
+$("sat").onclick = () => {
+  map.removeLayer(street);
+  satellite.addTo(map);
+  $("mapMode").textContent = "SATELLITE";
+  say("Satellite layer enabled");
+  log("Satellite imagery layer enabled.");
 };
 
-$("streets").onclick = () => {
-  map.removeLayer(imagery);
-  streets.addTo(map);
-  $("feedback").textContent = "STREET MAP ACTIVE";
+$("street").onclick = () => {
+  map.removeLayer(satellite);
+  street.addTo(map);
+  $("mapMode").textContent = "STREET";
+  say("Street layer enabled");
+  log("Street map layer enabled.");
 };
 
-$("zoomIn").onclick = () => map.zoomIn();
-$("zoomOut").onclick = () => map.zoomOut();
+$("zin").onclick = () => map.zoomIn();
+$("zout").onclick = () => map.zoomOut();
 
-$("fullscreen").onclick = async () => {
+$("world").onclick = () => {
+  map.flyTo([22.9734,78.6569],3);
+  say("World view");
+  log("World view restored.");
+};
+
+$("full").onclick = async () => {
   try {
     if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen();
+      await $("mapbox").requestFullscreen();
     } else {
       await document.exitFullscreen();
     }
-    setTimeout(() => map.invalidateSize(),300);
+    setTimeout(() => map.invalidateSize(),250);
   } catch {
-    $("feedback").textContent = "FULLSCREEN NOT AVAILABLE";
+    say("Fullscreen unavailable");
   }
 };
 
 document.addEventListener("fullscreenchange", () => {
-  setTimeout(() => map.invalidateSize(),300);
+  setTimeout(() => map.invalidateSize(),250);
 });
+
+$("gridBtn").onclick = () => {
+  gridOn = !gridOn;
+  $("map").classList.toggle("gridfx",gridOn);
+  $("gridBtn").textContent = "▦ GRID: " + (gridOn?"ON":"OFF");
+  say("Grid overlay " + (gridOn?"enabled":"disabled"));
+  log("Visual grid " + (gridOn?"enabled.":"disabled."));
+};
+
+$("nightBtn").onclick = () => {
+  nightOn = !nightOn;
+  $("map").classList.toggle("nightfx",nightOn);
+  $("nightBtn").textContent = "◐ NIGHT: " + (nightOn?"ON":"OFF");
+  say("Night filter " + (nightOn?"enabled":"disabled"));
+  log("Visual night filter toggled.");
+};
 
 $("locate").onclick = () => {
   if (!navigator.geolocation) {
-    $("feedback").textContent = "LOCATION NOT SUPPORTED";
+    say("Geolocation unsupported");
     return;
   }
+  say("Waiting for location permission");
+  log("Requesting browser location permission.");
 
-  $("feedback").textContent = "REQUESTING YOUR PERMISSION...";
-
-  navigator.geolocation.getCurrentPosition(
-    p => {
-      const lat = p.coords.latitude;
-      const lng = p.coords.longitude;
-      map.flyTo([lat,lng],16);
-      setInfo(lat,lng,"Your Current Location");
-      $("feedback").textContent = "YOUR LOCATION DISPLAYED";
-    },
-    () => {
-      $("feedback").textContent =
-        "LOCATION UNAVAILABLE. CHECK PERMISSION AND GPS.";
-    },
-    {enableHighAccuracy:true,timeout:12000}
-  );
+  navigator.geolocation.getCurrentPosition(p => {
+    const lat = p.coords.latitude, lng = p.coords.longitude;
+    map.flyTo([lat,lng],16);
+    setPoint(lat,lng,"Your Current Location");
+    say("Your location displayed");
+  }, () => {
+    say("Location denied or unavailable");
+    log("Location unavailable. Check browser permission.",true);
+  }, {enableHighAccuracy:true,timeout:12000});
 };
 
-$("search").addEventListener("submit", async e => {
+$("searchForm").onsubmit = async e => {
   e.preventDefault();
   const q = $("query").value.trim();
   if (!q) return;
 
-  if (Date.now() - lastSearch < 1100) {
-    $("feedback").textContent = "PLEASE WAIT BEFORE SEARCHING AGAIN";
+  if (Date.now()-lastSearch < 1100) {
+    say("Wait before another search");
     return;
   }
   lastSearch = Date.now();
-  $("feedback").textContent = "SEARCHING MAP...";
+  say("Searching location...");
+  log("Place search requested: " + q);
 
   try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("q",q);
-    url.searchParams.set("format","jsonv2");
-    url.searchParams.set("limit","1");
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error();
-
-    const results = await res.json();
-    if (!results.length) {
-      $("feedback").textContent = "NO PLACE FOUND";
+    const u = new URL("https://nominatim.openstreetmap.org/search");
+    u.searchParams.set("q",q);
+    u.searchParams.set("format","jsonv2");
+    u.searchParams.set("limit","1");
+    const r = await fetch(u);
+    if (!r.ok) throw new Error("Search service unavailable");
+    const data = await r.json();
+    if (!data.length) {
+      say("No matching place found");
       return;
     }
-
-    const r = results[0];
-    const lat = Number(r.lat);
-    const lng = Number(r.lon);
-
-    map.flyTo([lat,lng],15,{duration:1.5});
-    setInfo(lat,lng,r.display_name);
-    $("feedback").textContent = "LOCATION FOUND";
+    const p = data[0], lat=Number(p.lat), lng=Number(p.lon);
+    map.flyTo([lat,lng],15,{duration:1.4});
+    setPoint(lat,lng,p.display_name);
+    say("Location found");
   } catch {
-    $("feedback").textContent = "SEARCH FAILED. CHECK INTERNET.";
+    say("Search failed. Check internet.");
+    log("Search failed. Try again later.",true);
   }
-});
+};
 
-function updateClock() {
-  $("clock").textContent = new Date().toLocaleTimeString();
+$("pinBtn").onclick = () => {
+  if (!selected) {
+    say("Click the map to select a point first");
+    return;
+  }
+  const p = L.marker([selected.lat,selected.lng]).addTo(map);
+  p.bindPopup("Saved map pin<br>" +
+    selected.lat.toFixed(6)+", "+selected.lng.toFixed(6));
+  pins.push({lat:selected.lat,lng:selected.lng,name:selected.name});
+  say("Pin added: " + pins.length);
+  log("Map pin added. Total saved pins: " + pins.length);
+};
+
+$("clearBtn").onclick = () => {
+  pins = [];
+  measurePoints = [];
+  measureMode = false;
+  if (measureLine) map.removeLayer(measureLine);
+  measureLine = null;
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker) map.removeLayer(layer);
+  });
+  marker = null;
+  selected = null;
+  $("place").textContent = "No location selected";
+  $("lat").textContent = "--";
+  $("lng").textContent = "--";
+  say("Markers cleared");
+  log("Map markers and saved points cleared.");
+};
+
+$("coordBtn").onclick = async () => {
+  if (!selected) return say("Select a map point first");
+  const txt = selected.lat + ", " + selected.lng;
+  try {
+    await navigator.clipboard.writeText(txt);
+    say("Coordinates copied");
+    log("Coordinates copied to clipboard.");
+  } catch {
+    say(txt);
+    log("Clipboard unavailable; coordinates remain visible.",true);
+  }
 }
-updateClock();
-setInterval(updateClock,1000);
-</script>
-</body>
-</html>
